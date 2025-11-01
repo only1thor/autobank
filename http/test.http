@@ -1,3 +1,13 @@
 ### Test that secrets load correctly
-GET https://postman-echo.com/get?toksecreten={{$dotenv CLIENT_SECRET}}&id={{$dotenv CLIENT_ID}}
+GET https://postman-echo.com/get?toksecreten={{$dotenv CLIENT_SECRET}}&url={{$dotenv CLIENT_ID}}
+
+
+###
+
+POST https://postman-echo.com/post HTTP/1.1
+Content-Type: application/x-www-form-urlencoded
+
+arg0=val0
+&arg1=val1
+&arg2=val2
 
