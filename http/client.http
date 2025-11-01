@@ -1,7 +1,7 @@
 ### Get the OAuth access token
 # @name auth
 
-@CODE=ba5af51417144525ad54278aea01d1e7
+@CODE=713de64c02a44e59b81584aff7b98f48
 @STATE=1226754
 
 curl --location --request POST https://api.sparebank1.no/oauth/token --header 'Content-Type: application/x-www-form-urlencoded' --data "client_id={{$dotenv CLIENT_ID}}" --data "client_secret={{$dotenv CLIENT_SECRET}}" --data "code={{CODE}}" --data 'grant_type=authorization_code' --data "state={{STATE}}" --data "redirect_uri=$http://localhost"
@@ -18,4 +18,5 @@ curl https://api.sparebank1.no/common/helloworld --header "Authorization: Bearer
 
 ### Get accounts
 @access_token = {{auth.response.body.access_token}}
+# @access_token = {{refresh.response.body.access_token}}
 curl https://api.sparebank1.no/personal/banking/accounts --header "Authorization: Bearer {{ access_token }}" --header 'Accept: application/vnd.sparebank1.v1+json; charset=utf-8'

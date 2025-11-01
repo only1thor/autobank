@@ -28,6 +28,7 @@ fn config_file() -> Option<PathBuf> {
 #[derive(Deserialize)]
 pub struct AppConfig {
     pub client_id: String,
+    pub refresh_token: String,
 }
 
 pub fn get_config() -> AppConfig {
