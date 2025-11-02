@@ -47,3 +47,7 @@ pub fn get_config() -> AppConfig {
         panic!("Unable to load config. Panicing....");
     }
 }
+
+pub fn read_access_token() -> String {
+    "Token".to_string()
+}

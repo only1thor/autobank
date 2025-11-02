@@ -4,7 +4,27 @@ use tiny_http::{Response, Server};
 use url::form_urlencoded;
 use urlencoding::encode;
 
-pub fn auth(client_id: String) -> String {
+use crate::config::read_access_token;
+
+pub fn auth(client_id: String) {
+    // 1: Check if access token present and valid
+    let access_token = read_access_token();
+
+    if test_token(access_token) {
+        println!("Access token valid");
+        return;
+    }
+
+    println!("Access token not valid");
+    // 2: If not: Check if refresh token present and valid. Refresh to get access token.
+
+    // 3: If not: Start auth flow with get code, then get access token.
+
+    let code = get_code(client_id);
+    let access_token = get_access_token(code);
+}
+
+fn get_code(client_id: String) -> String {
     let port = 8321;
     let redirect_uri = format!("http://localhost:{port}");
 
@@ -45,11 +65,18 @@ pub fn auth(client_id: String) -> String {
 
     // Block and wait for the code from server thread
     let code = rx.recv().unwrap();
+    println!("Code: {}", code);
     code
 }
 
-fn main() {
-    let client_id = "my_client_id".to_string();
-    let code = auth(client_id);
-    println!("Got auth code: {}", code);
+fn get_access_token(code: String) {
+    todo!("Should probably return result");
+}
+
+fn refresh_access_token(refresh_token: String) {
+    todo!("Should probably return result");
+}
+
+fn test_token(access_token: String) -> bool {
+    true
 }
