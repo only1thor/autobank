@@ -10,7 +10,7 @@ fn app_data_dir() -> Option<PathBuf> {
     dirs::data_dir().map(|base| base.join("auox"))
 }
 
-fn config_file() -> Option<PathBuf> {
+fn config_file_path() -> Option<PathBuf> {
     let dir = match app_config_dir() {
         Some(path) => path,
 
@@ -36,8 +36,8 @@ pub struct AppConfig {
     pub client_secret: String,
 }
 
-pub fn get_config() -> AppConfig {
-    if let Some(conf_path) = config_file() {
+pub fn get_config_file() -> AppConfig {
+    if let Some(conf_path) = config_file_path() {
         let file = fs::read(conf_path)
             .expect("could not read config.toml")
             .iter()
@@ -53,7 +53,7 @@ pub fn get_config() -> AppConfig {
     }
 }
 
-pub fn read_access_token() -> TokenData {
+pub fn read_access_token_file() -> TokenData {
     let dir = match app_data_dir() {
         Some(path) => path,
         None => {
@@ -75,7 +75,7 @@ pub fn read_access_token() -> TokenData {
     token_data
 }
 
-pub fn save_token_data(token_data: &TokenData) {
+pub fn save_token_data_file(token_data: &TokenData) {
     let dir = match app_data_dir() {
         Some(path) => path,
         None => {

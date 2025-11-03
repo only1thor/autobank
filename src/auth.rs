@@ -5,15 +5,15 @@ use tiny_http::{Response, Server};
 use url::form_urlencoded;
 use urlencoding::encode;
 
-use crate::config::{read_access_token, save_token_data};
+use crate::api;
+use crate::fileio::{read_access_token_file, save_token_data_file};
 use crate::models::TokenData;
 
 pub fn auth(client_id: String, client_secret: String) {
     // 1: Check if access token present and valid
-    let token_data = read_access_token();
+    let token_data = read_access_token_file();
 
-    if test_token(token_data.access_token.clone()) {
-        println!("Access token valid");
+    if is_token_valid(token_data.access_token.clone()) {
         return;
     }
 
@@ -22,7 +22,7 @@ pub fn auth(client_id: String, client_secret: String) {
     if let Ok(new_token_data) =
         refresh_access_token(&client_id, &client_secret, &token_data.refresh_token)
     {
-        save_token_data(&new_token_data);
+        save_token_data_file(&new_token_data);
         println!("Token refreshed successfully");
         return;
     }
@@ -111,24 +111,13 @@ fn refresh_access_token(
     Ok(token_data)
 }
 
-fn test_token(access_token: String) -> bool {
-    // Return false if token is empty
+fn is_token_valid(access_token: String) -> bool {
     if access_token.is_empty() {
         return false;
     }
 
-    // Test token by calling the hello world endpoint
-    let client = Client::new();
-    let response = client
-        .get("https://api.sparebank1.no/common/helloworld")
-        .header("Authorization", format!("Bearer {}", access_token))
-        .header(
-            "Accept",
-            "application/vnd.sparebank1.v1+json; charset=utf-8",
-        )
-        .send();
+    let response = api::hello_world(access_token);
 
-    // Token is valid if we get a successful response
     match response {
         Ok(resp) => resp.status().is_success(),
         Err(_) => false,

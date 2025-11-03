@@ -3,23 +3,20 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
-use reqwest::blocking::Client;
 use std::io;
 
 use ratatui::{Terminal, backend::CrosstermBackend, widgets::ListState};
 
-use crate::{
-    config::read_access_token,
-    models::{Account, AccountData, accounts},
-};
+use crate::{fileio::read_access_token_file, models::Account};
 
+mod api;
 mod auth;
-mod config;
+mod fileio;
 mod models;
 mod ui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let config = config::get_config();
+    let config = fileio::get_config_file();
 
     auth::auth(config.client_id, config.client_secret);
 
@@ -69,25 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn get_accounts() -> Vec<Account> {
-    let access_token = read_access_token().access_token;
-
-    let client = Client::new();
-
-    let account_response = client
-        .get("https://api.sparebank1.no/personal/banking/accounts")
-        .header("Authorization", format!("Bearer {}", access_token))
-        .header(
-            "Accept",
-            "application/vnd.sparebank1.v1+json; charset=utf-8",
-        )
-        .send();
-
-    let data: AccountData = match account_response {
-        Ok(response) => response.json().expect("Failed to parse JSON"),
-        Err(err) => {
-            panic!("Paniced: {}", err)
-        }
-    };
-
+    let access_token = read_access_token_file().access_token;
+    let data = api::get_accounts(access_token);
     data.accounts
 }
