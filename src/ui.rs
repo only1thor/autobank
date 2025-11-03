@@ -8,7 +8,13 @@ use ratatui::{
     widgets::{Block, Borders, List, ListItem, ListState},
 };
 
-pub fn draw(terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>, state: &mut ListState, names: &Vec<&str>) {
+use crate::models::Account;
+
+pub fn draw(
+    terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>,
+    state: &mut ListState,
+    accounts: &Vec<Account>,
+) {
     let _ = terminal.draw(|f| {
         // Layout
         let chunks = Layout::default()
@@ -17,7 +23,10 @@ pub fn draw(terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>, state: &mut 
             .split(f.area());
 
         // Convert names to ListItems
-        let items: Vec<ListItem> = names.iter().map(|n| ListItem::new(n.to_string())).collect();
+        let items: Vec<ListItem> = accounts
+            .iter()
+            .map(|acc| ListItem::new(acc.name.clone()))
+            .collect();
 
         // Create the List widget
         let list = List::new(items)

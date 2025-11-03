@@ -33,6 +33,7 @@ fn config_file() -> Option<PathBuf> {
 #[derive(Deserialize)]
 pub struct AppConfig {
     pub client_id: String,
+    pub client_secret: String,
 }
 
 pub fn get_config() -> AppConfig {
@@ -52,7 +53,7 @@ pub fn get_config() -> AppConfig {
     }
 }
 
-pub fn read_access_token() -> String {
+pub fn read_access_token() -> TokenData {
     let dir = match app_data_dir() {
         Some(path) => path,
         None => {
@@ -62,7 +63,6 @@ pub fn read_access_token() -> String {
 
     println!("App data dir: {}", dir.display());
 
-    // Create the directory if needed
     std::fs::create_dir_all(&dir).expect("Failed to create data dir");
 
     let token_path = dir.join("auth.json");
@@ -70,8 +70,28 @@ pub fn read_access_token() -> String {
     let file_content = fs::read_to_string(&token_path).expect("Could not read token.json");
 
     let token_data: TokenData =
-        serde_json::from_str(&file_content).expect("token.json is not in proper format");
+        serde_json::from_str(&file_content).expect("auth.json is not in proper format");
 
-    println!("Token data: {}", token_data.access_token);
-    token_data.access_token
+    token_data
+}
+
+pub fn save_token_data(token_data: &TokenData) {
+    let dir = match app_data_dir() {
+        Some(path) => path,
+        None => {
+            panic!("Could not determine data directory")
+        }
+    };
+
+    // Create the directory if needed
+    std::fs::create_dir_all(&dir).expect("Failed to create data dir");
+
+    let token_path = dir.join("auth.json");
+
+    let json_content =
+        serde_json::to_string_pretty(token_data).expect("Failed to serialize token data");
+
+    fs::write(&token_path, json_content).expect("Failed to write token data to file");
+
+    println!("Token data saved to {}", token_path.display());
 }

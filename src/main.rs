@@ -3,19 +3,25 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use reqwest::blocking::Client;
 use std::io;
 
 use ratatui::{Terminal, backend::CrosstermBackend, widgets::ListState};
 
+use crate::{
+    config::read_access_token,
+    models::{Account, AccountData, accounts},
+};
+
 mod auth;
 mod config;
-mod ui;
 mod models;
+mod ui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = config::get_config();
 
-    auth::auth(config.client_id);
+    auth::auth(config.client_id, config.client_secret);
 
     // Setup terminal
     enable_raw_mode()?;
@@ -25,14 +31,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // Our list of names
-    let names: Vec<&str> = vec!["Norma", "Bob", "Charlie", "Diana", "Eve", "Frank"];
+    //let names: Vec<&str> = vec!["Norma", "Bob", "Charlie", "Diana", "Eve", "Frank"];
+
+    let accounts = get_accounts();
 
     // Track selected item
     let mut state = ListState::default();
     state.select(Some(0));
 
     loop {
-        ui::draw(&mut terminal, &mut state, &names);
+        ui::draw(&mut terminal, &mut state, &accounts);
 
         // Handle input
         if event::poll(std::time::Duration::from_millis(100))? {
@@ -42,7 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     KeyCode::Down => {
                         let i = match state.selected() {
                             Some(i) => {
-                                if i >= names.len() - 1 {
+                                if i >= accounts.len() - 1 {
                                     0
                                 } else {
                                     i + 1
@@ -56,7 +64,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let i = match state.selected() {
                             Some(i) => {
                                 if i == 0 {
-                                    names.len() - 1
+                                    accounts.len() - 1
                                 } else {
                                     i - 1
                                 }
@@ -74,4 +82,28 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     disable_raw_mode()?;
     execute!(io::stdout(), LeaveAlternateScreen)?;
     Ok(())
+}
+
+fn get_accounts() -> Vec<Account> {
+    let access_token = read_access_token().access_token;
+
+    let client = Client::new();
+
+    let account_response = client
+        .get("https://api.sparebank1.no/personal/banking/accounts")
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header(
+            "Accept",
+            "application/vnd.sparebank1.v1+json; charset=utf-8",
+        )
+        .send();
+
+    let data: AccountData = match account_response {
+        Ok(response) => response.json().expect("Failed to parse JSON"),
+        Err(err) => {
+            panic!("Paniced: {}", err)
+        }
+    };
+
+    data.accounts
 }

@@ -1,28 +1,36 @@
+use reqwest::blocking::Client;
 use std::collections::HashMap;
 use std::sync::mpsc;
-use reqwest::blocking::Client;
 use tiny_http::{Response, Server};
 use url::form_urlencoded;
 use urlencoding::encode;
 
-use crate::config::read_access_token;
+use crate::config::{read_access_token, save_token_data};
+use crate::models::TokenData;
 
-pub fn auth(client_id: String) {
+pub fn auth(client_id: String, client_secret: String) {
     // 1: Check if access token present and valid
-    let access_token = read_access_token();
+    let token_data = read_access_token();
 
-    if test_token(access_token) {
+    if test_token(token_data.access_token.clone()) {
         println!("Access token valid");
         return;
     }
 
-    println!("Access token not valid");
-    // 2: If not: Check if refresh token present and valid. Refresh to get access token.
+    println!("Access token not valid, attempting to refresh...");
 
-    // 3: If not: Start auth flow with get code, then get access token.
+    if let Ok(new_token_data) =
+        refresh_access_token(&client_id, &client_secret, &token_data.refresh_token)
+    {
+        save_token_data(&new_token_data);
+        println!("Token refreshed successfully");
+        return;
+    }
 
+    // 3: If refresh failed: Start auth flow with get code, then get access token.
+    println!("Token refresh failed, starting full OAuth flow...");
     let code = get_code(client_id);
-    let access_token = get_access_token(code);
+    let _access_token = get_access_token(code);
 }
 
 fn get_code(client_id: String) -> String {
@@ -70,12 +78,37 @@ fn get_code(client_id: String) -> String {
     code
 }
 
-fn get_access_token(code: String) {
-    todo!("Should probably return result");
+fn get_access_token(_code: String) -> String {
+    todo!("Implement token exchange - use code to get access token from OAuth endpoint");
 }
 
-fn refresh_access_token(refresh_token: String) {
-    todo!("Should probably return result");
+fn refresh_access_token(
+    client_id: &str,
+    client_secret: &str,
+    refresh_token: &str,
+) -> Result<TokenData, Box<dyn std::error::Error>> {
+    let client = Client::new();
+
+    let params = [
+        ("client_id", client_id),
+        ("client_secret", client_secret),
+        ("refresh_token", refresh_token),
+        ("grant_type", "refresh_token"),
+    ];
+
+    let response = client
+        .post("https://api.sparebank1.no/oauth/token")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&params)
+        .send()?;
+
+    if !response.status().is_success() {
+        return Err(format!("Token refresh failed with status: {}", response.status()).into());
+    }
+
+    let token_data: TokenData = response.json()?;
+
+    Ok(token_data)
 }
 
 fn test_token(access_token: String) -> bool {
@@ -89,7 +122,10 @@ fn test_token(access_token: String) -> bool {
     let response = client
         .get("https://api.sparebank1.no/common/helloworld")
         .header("Authorization", format!("Bearer {}", access_token))
-        .header("Accept", "application/vnd.sparebank1.v1+json; charset=utf-8")
+        .header(
+            "Accept",
+            "application/vnd.sparebank1.v1+json; charset=utf-8",
+        )
         .send();
 
     // Token is valid if we get a successful response
