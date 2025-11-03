@@ -2,7 +2,11 @@ use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
 fn app_config_dir() -> Option<PathBuf> {
-    dirs::config_dir().map(|base| base.join("aurox"))
+    dirs::config_dir().map(|base| base.join("auox"))
+}
+
+fn app_data_dir() -> Option<PathBuf> {
+    dirs::data_dir().map(|base| base.join("auox"))
 }
 
 fn config_file() -> Option<PathBuf> {

@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::sync::mpsc;
+use reqwest::blocking::Client;
 use tiny_http::{Response, Server};
 use url::form_urlencoded;
 use urlencoding::encode;
@@ -78,5 +79,22 @@ fn refresh_access_token(refresh_token: String) {
 }
 
 fn test_token(access_token: String) -> bool {
-    true
+    // Return false if token is empty
+    if access_token.is_empty() {
+        return false;
+    }
+
+    // Test token by calling the hello world endpoint
+    let client = Client::new();
+    let response = client
+        .get("https://api.sparebank1.no/common/helloworld")
+        .header("Authorization", format!("Bearer {}", access_token))
+        .header("Accept", "application/vnd.sparebank1.v1+json; charset=utf-8")
+        .send();
+
+    // Token is valid if we get a successful response
+    match response {
+        Ok(resp) => resp.status().is_success(),
+        Err(_) => false,
+    }
 }

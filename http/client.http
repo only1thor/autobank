@@ -1,7 +1,7 @@
 ### Get the OAuth access token
 # @name auth
 
-@CODE=713de64c02a44e59b81584aff7b98f48
+@CODE=473ffac9087d4a65a0aa27f70631702a
 @STATE=1226754
 
 curl --location --request POST https://api.sparebank1.no/oauth/token --header 'Content-Type: application/x-www-form-urlencoded' --data "client_id={{$dotenv CLIENT_ID}}" --data "client_secret={{$dotenv CLIENT_SECRET}}" --data "code={{CODE}}" --data 'grant_type=authorization_code' --data "state={{STATE}}" --data "redirect_uri=$http://localhost"
