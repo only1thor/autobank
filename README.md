@@ -1,2 +1,2 @@
-# aurox
+# auox
 Aurum Oxydatum
