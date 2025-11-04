@@ -5,39 +5,77 @@ use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Layout},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, List, ListItem, ListState},
+    widgets::{Block, Borders, Paragraph, Row, Table, TableState},
 };
 
 use crate::models::Account;
 
 pub fn draw(
     terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>,
-    state: &mut ListState,
+    state: &mut TableState,
     accounts: &Vec<Account>,
+    show_balance: &bool,
 ) {
     let _ = terminal.draw(|f| {
-        // Layout
+        // Layout with table and help bar
         let chunks = Layout::default()
             .direction(Direction::Vertical)
-            .constraints([Constraint::Percentage(100)].as_ref())
+            .constraints([Constraint::Min(0), Constraint::Length(3)].as_ref())
             .split(f.area());
 
-        // Convert names to ListItems
-        let items: Vec<ListItem> = accounts
+        // Create header row
+        let header = Row::new(vec!["Account Name", "Balance", "Account Number", "Owner"]).style(
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        );
+
+        // Create table rows from accounts
+        let rows: Vec<Row> = accounts
             .iter()
-            .map(|acc| ListItem::new(acc.name.clone()))
+            .map(|acc| {
+                let mut balance = "".to_string();
+                if *show_balance {
+                    balance = format!("{:.2}", acc.balance);
+                }
+
+                Row::new(vec![
+                    acc.name.clone(),
+                    balance,
+                    acc.account_number.clone(),
+                    acc.owner.name.clone(),
+                ])
+            })
             .collect();
 
-        // Create the List widget
-        let list = List::new(items)
+        // Define column widths
+        let widths = [
+            Constraint::Percentage(25),
+            Constraint::Percentage(25),
+            Constraint::Percentage(25),
+            Constraint::Percentage(25),
+        ];
+
+        // Create the Table widget
+        let table = Table::new(rows, widths)
+            .header(header)
             .block(Block::default().borders(Borders::ALL).title("Accounts"))
-            .highlight_style(
+            .row_highlight_style(
                 Style::default()
                     .bg(Color::Blue)
                     .fg(Color::White)
                     .add_modifier(Modifier::BOLD),
-            );
+            )
+            .highlight_symbol("💰 ");
 
-        f.render_stateful_widget(list, chunks[0], &mut state.clone());
+        f.render_stateful_widget(table, chunks[0], state);
+
+        // Help bar with commands
+        let help_text = "Commands: [q] Quit | [b] Toggle Balance | [↑/↓] Navigate";
+        let help = Paragraph::new(help_text)
+            .block(Block::default().borders(Borders::ALL))
+            .style(Style::default().fg(Color::Cyan));
+
+        f.render_widget(help, chunks[1]);
     });
 }

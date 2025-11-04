@@ -1,4 +1,5 @@
 use crate::models::TokenData;
+use log::debug;
 use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
@@ -19,14 +20,14 @@ fn config_file_path() -> Option<PathBuf> {
         }
     };
 
-    println!("App config dir: {}", dir.display());
+    debug!("App config dir: {}", dir.display());
 
     // Create the directory if needed
     std::fs::create_dir_all(&dir).expect("Failed to create config dir");
 
     // Then use it for your files
     let config_path = dir.join("config.toml");
-    println!("Config file path: {}", config_path.display());
+    debug!("Config file path: {}", config_path.display());
     Some(config_path)
 }
 
@@ -61,7 +62,7 @@ pub fn read_access_token_file() -> TokenData {
         }
     };
 
-    println!("App data dir: {}", dir.display());
+    debug!("App data dir: {}", dir.display());
 
     std::fs::create_dir_all(&dir).expect("Failed to create data dir");
 
@@ -93,5 +94,5 @@ pub fn save_token_data_file(token_data: &TokenData) {
 
     fs::write(&token_path, json_content).expect("Failed to write token data to file");
 
-    println!("Token data saved to {}", token_path.display());
+    debug!("Token data saved to {}", token_path.display());
 }

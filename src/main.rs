@@ -5,7 +5,7 @@ use crossterm::{
 };
 use std::io;
 
-use ratatui::{Terminal, backend::CrosstermBackend, widgets::ListState};
+use ratatui::{Terminal, backend::CrosstermBackend, widgets::TableState};
 
 use crate::{fileio::read_access_token_file, models::Account};
 
@@ -16,6 +16,9 @@ mod models;
 mod ui;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize logger (off by default, enable with RUST_LOG=debug)
+    env_logger::init();
+
     let config = fileio::get_config_file();
 
     auth::auth(config.client_id, config.client_secret);
@@ -33,11 +36,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let accounts = get_accounts();
 
     // Track selected item
-    let mut state = ListState::default();
+    let mut state = TableState::default();
+    let mut show_balance = false;
     state.select(Some(0));
 
     loop {
-        ui::draw(&mut terminal, &mut state, &accounts);
+        ui::draw(&mut terminal, &mut state, &accounts, &show_balance);
 
         // Handle input
         if event::poll(std::time::Duration::from_millis(100))? {
@@ -53,6 +57,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .selected()
                             .map_or(0, |i| (i + accounts.len() - 1) % accounts.len());
                         state.select(Some(i));
+                    }
+                    KeyCode::Char('b') => {
+                        show_balance = !show_balance
                     }
                     _ => {}
                 }
