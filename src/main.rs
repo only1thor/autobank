@@ -3,6 +3,7 @@ use crossterm::{
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use log::debug;
 use std::io;
 
 use ratatui::{Terminal, backend::CrosstermBackend, widgets::TableState};
@@ -73,7 +74,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn get_accounts() -> Vec<Account> {
-    let access_token = read_access_token_file().access_token;
+    debug!("Fetching accounts");
+    let access_token = read_access_token_file().unwrap().access_token;
     let data = api::get_accounts(access_token);
     data.accounts
 }

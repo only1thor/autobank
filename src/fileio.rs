@@ -54,7 +54,7 @@ pub fn get_config_file() -> AppConfig {
     }
 }
 
-pub fn read_access_token_file() -> TokenData {
+pub fn read_access_token_file() -> Option<TokenData> {
     let dir = match app_data_dir() {
         Some(path) => path,
         None => {
@@ -68,12 +68,16 @@ pub fn read_access_token_file() -> TokenData {
 
     let token_path = dir.join("auth.json");
 
-    let file_content = fs::read_to_string(&token_path).expect("Could not read token.json");
+    let file_content = fs::read_to_string(&token_path);
 
-    let token_data: TokenData =
-        serde_json::from_str(&file_content).expect("auth.json is not in proper format");
+    match file_content {
+        Ok(token) => {
+            let token_data: TokenData = serde_json::from_str(&token).expect("auth.json is not in proper format");
+            Some(token_data)
+        },
+        Err(_) => {None},
+    }
 
-    token_data
 }
 
 pub fn save_token_data_file(token_data: &TokenData) {

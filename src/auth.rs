@@ -1,3 +1,4 @@
+use log::debug;
 use reqwest::blocking::Client;
 use std::collections::HashMap;
 use std::sync::mpsc;
@@ -11,29 +12,35 @@ use crate::models::TokenData;
 
 pub fn auth(client_id: String, client_secret: String) {
     // 1: Check if access token present and valid
-    let token_data = read_access_token_file();
 
-    if is_token_valid(token_data.access_token.clone()) {
-        return;
-    }
+    if let Some(token_data) = read_access_token_file() {
+        if is_token_valid(token_data.access_token) {
+            return;
+        }
 
-    println!("Access token not valid, attempting to refresh...");
+        debug!("Access token not valid, attempting to refresh...");
 
-    if let Ok(new_token_data) =
-        refresh_access_token(&client_id, &client_secret, &token_data.refresh_token)
-    {
-        save_token_data_file(&new_token_data);
-        println!("Token refreshed successfully");
-        return;
+        if let Ok(new_token_data) =
+            refresh_access_token(&client_id, &client_secret, &token_data.refresh_token)
+        {
+            save_token_data_file(&new_token_data);
+            debug!("Token refreshed successfully");
+            return;
+        }
     }
 
     // 3: If refresh failed: Start auth flow with get code, then get access token.
-    println!("Token refresh failed, starting full OAuth flow...");
-    let code = get_code(client_id);
-    let _access_token = get_access_token(code);
+    debug!("Token refresh failed, starting full OAuth flow...");
+    let code = get_code(&client_id);
+    if let Ok(token_data) = get_access_token(&code, &client_id, &client_secret) {
+        save_token_data_file(&token_data);
+        debug!("Access token obtained and saved successfully");
+    } else {
+        panic!("Failed to obtain access token from OAuth flow");
+    }
 }
 
-fn get_code(client_id: String) -> String {
+fn get_code(client_id: &str) -> String {
     let port = 8321;
     let redirect_uri = format!("http://localhost:{port}");
 
@@ -78,8 +85,37 @@ fn get_code(client_id: String) -> String {
     code
 }
 
-fn get_access_token(_code: String) -> String {
-    todo!("Implement token exchange - use code to get access token from OAuth endpoint");
+fn get_access_token(
+    code: &str,
+    client_id: &str,
+    client_secret: &str,
+) -> Result<TokenData, Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let redirect_uri = "http://localhost:8321";
+
+    let params = [
+        ("client_id", client_id),
+        ("client_secret", client_secret),
+        ("code", code),
+        ("grant_type", "authorization_code"),
+        ("redirect_uri", redirect_uri),
+    ];
+
+    let response = client
+        .post("https://api.sparebank1.no/oauth/token")
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&params)
+        .send()?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let error_body = response.text().unwrap_or_default();
+        return Err(format!("Token exchange failed with status {}: {}", status, error_body).into());
+    }
+
+    let token_data: TokenData = response.json()?;
+
+    Ok(token_data)
 }
 
 fn refresh_access_token(
