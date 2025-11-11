@@ -1,4 +1,4 @@
-### Test that secrets load correctly
+r### Test that secrets load correctly
 GET https://postman-echo.com/get?toksecreten={{$dotenv CLIENT_SECRET}}&url={{$dotenv CLIENT_ID}}
 
 

@@ -9,7 +9,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-use ratatui::{Terminal, backend::CrosstermBackend, widgets::TableState};
+use ratatui::{Terminal, backend::CrosstermBackend, widgets::{ListState, TableState}};
 
 use crate::{fileio::read_access_token_file, models::Account};
 
@@ -23,6 +23,11 @@ use tachyonfx::{
     EffectManager, Interpolation,
     fx::{self},
 };
+
+pub struct AppState {
+    pub account_state: TableState,
+    pub menu_state: ListState,
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize logger (off by default, enable with RUST_LOG=debug)
@@ -42,9 +47,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let accounts = get_accounts();
 
     // Track selected item
-    let mut state = TableState::default();
+    // let mut account_state = TableState::default();
+    // account_state.select(Some(0));
+
+    // let mut menu_state = ListState::default();
+    // menu_state.select(Some(0));
+
+
     let mut show_balance = false;
-    state.select(Some(0));
 
     let mut effects: EffectManager<()> = EffectManager::default();
 
@@ -55,19 +65,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut last_frame = Instant::now();
     let mut exiting = false;
     let mut exit_start_time: Option<Instant> = None;
-    let exit_duration = Duration::from_millis(500); 
-    let mut show_menu = false;
+    let exit_duration = Duration::from_millis(500);
+    let mut menu_open = false;
+
+    let mut app_state = AppState {
+        account_state:  TableState::new().with_selected(0),
+        menu_state:  ListState::default().with_selected(Some(0))
+    };
+
+    let menu_length = 2;
 
     loop {
         let elapsed = last_frame.elapsed();
         last_frame = Instant::now();
 
         ui::draw(
+            &mut app_state,
             &mut terminal,
-            &mut state,
             &accounts,
             &show_balance,
-            &show_menu,
+            &menu_open,
             &mut effects,
             elapsed,
         );
@@ -78,23 +95,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match key.code {
                     KeyCode::Char('q') => {
                         if !exiting {
-                            // Trigger dissolve effect on exit
                             effects.add_effect(fx::dissolve((500, Interpolation::QuintIn)));
                             exiting = true;
                             exit_start_time = Some(Instant::now());
                         }
                     }
                     KeyCode::Down => {
-                        let i = state.selected().map_or(0, |i| (i + 1) % accounts.len());
-                        state.select(Some(i));
+
+                        if !menu_open {
+                            let i = app_state.account_state.selected().map_or(0, |i| (i + 1) % accounts.len());
+                            app_state.account_state.select(Some(i));
+                        }
+                        else {
+                            let i = app_state.menu_state.selected().map_or(0, |i| (i + 1) % menu_length);
+                            app_state.menu_state.select(Some(i));
+                        }
+                        
                     }
                     KeyCode::Up => {
-                        let i = state
-                            .selected()
-                            .map_or(0, |i| (i + accounts.len() - 1) % accounts.len());
-                        state.select(Some(i));
+                        if !menu_open {
+                            let i = app_state.account_state.selected().map_or(0, |i| (i + accounts.len() - 1) % accounts.len());
+                            app_state.account_state.select(Some(i));
+                        }
+                        else {
+                            let i = app_state.menu_state.selected().map_or(0, |i| (i + menu_length - 1) % menu_length);
+                            app_state.menu_state.select(Some(i));
+                        }
                     }
-                    KeyCode::Enter => {show_menu = !show_menu},
+                    KeyCode::Enter => {menu_open = true},
+                    KeyCode::Esc => {menu_open = false},
                     KeyCode::Char('b') => show_balance = !show_balance,
                     _ => {}
                 }

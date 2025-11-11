@@ -5,18 +5,18 @@ use ratatui::{
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Flex, Layout, Rect},
     style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Clear, Paragraph, Row, Table, TableState},
+    widgets::{Block, Borders, Cell, Clear, List, ListItem, Paragraph, Row, Table},
 };
 use tachyonfx::EffectManager;
 
-use crate::models::Account;
+use crate::{models::Account, AppState};
 
 pub fn draw(
+    app_state: &mut AppState,
     terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>,
-    state: &mut TableState,
     accounts: &[Account],
     show_balance: &bool,
-    show_menu: &bool,
+    menu_open: &bool,
     effects: &mut EffectManager<()>,
     elapsed: Duration,
 ) {
@@ -77,13 +77,28 @@ pub fn draw(
             )
             .highlight_symbol("💰 ");
 
-        frame.render_stateful_widget(table, chunks[0], state);
+        frame.render_stateful_widget(table, chunks[0], &mut app_state.account_state);
 
-        if *show_menu {
-            let block = Block::bordered().title("Popup");
-            let popup_area = popup_area(frame_area, 60, 20);
-            frame.render_widget(Clear, popup_area);
-            frame.render_widget(block, popup_area);
+        if *menu_open {
+            let menu_items = vec![
+                ListItem::new("Transaction History"),
+                ListItem::new("Cancel [esc]"),
+            ];
+
+            let list = List::new(menu_items)
+                .block(Block::bordered().title("Actions"))
+                .style(Style::default().fg(Color::White))
+                .highlight_style(
+                    Style::default()
+                        .bg(Color::Blue)
+                        .add_modifier(Modifier::BOLD)
+                )
+                .highlight_symbol("💰 ");
+
+            let menu_area = popup_area(frame_area, 60, 20);
+            let clear_area = popup_area(frame_area, 65, 25);
+            frame.render_widget(Clear, clear_area);
+            frame.render_stateful_widget(list, menu_area, &mut app_state.menu_state);
         }
 
         // Help bar with commands
