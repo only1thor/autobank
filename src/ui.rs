@@ -1,11 +1,7 @@
 use std::{io::Stdout, time::Duration};
 
 use ratatui::{
-    Terminal,
-    backend::CrosstermBackend,
-    layout::{Constraint, Direction, Flex, Layout, Rect},
-    style::{Color, Modifier, Style},
-    widgets::{Block, Borders, Cell, Clear, List, ListItem, Paragraph, Row, Table},
+    Terminal, backend::CrosstermBackend, layout::{Constraint, Direction, Flex, Layout, Rect}, style::{Color, Modifier, Style, Stylize}, text::{Line, Span}, widgets::{Block, Borders, Cell, Clear, List, ListItem, Paragraph, Row, Table}
 };
 use tachyonfx::EffectManager;
 
@@ -80,9 +76,13 @@ pub fn draw(
         frame.render_stateful_widget(table, chunks[0], &mut app.account_index);
 
         if app.menu_open {
+
+
+            let cancel_text = Line::from(vec!["Cancel".white(), Span::raw(" "), "[esc]".gray().dim()]);
+
             let menu_items = vec![
                 ListItem::new("Transaction History"),
-                ListItem::new("Cancel [esc]"),
+                ListItem::new(cancel_text),
             ];
 
             let list = List::new(menu_items)
