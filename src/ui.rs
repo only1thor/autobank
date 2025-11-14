@@ -71,18 +71,15 @@ fn draw_account_view(
         .accounts
         .iter()
         .filter(|acc| {
-            // Filter out credit cards if show_credit_card is false
             app.show_credit_card || acc.type_field != "CREDITCARD"
         })
         .map(|acc| {
-            // Only allocate balance string when showing it
             let balance = if app.show_balance {
                 format!("{:.2}", acc.balance)
             } else {
                 String::new()
             };
 
-            // Use borrowed data where possible, owned for local data
             Row::new(vec![
                 Cell::from(acc.name.as_str()),
                 Cell::from(balance),
@@ -115,11 +112,7 @@ fn draw_account_view(
     frame.render_stateful_widget(table, chunks[0], &mut app.account_index);
 
     // Help bar with commands
-    let help_text = "Commands: [Ctrl+C] Quit | [b] Toggle Balance | [↑/↓] Navigate";
-    let help = Paragraph::new(help_text)
-        .block(Block::default().borders(Borders::ALL))
-        .style(Style::default().fg(Color::Cyan));
-
+    let help = help_bar("Commands: [Ctrl+C] Quit | [b] Toggle Balance | [↑/↓] Navigate");
     frame.render_widget(help, chunks[1]);
     effects.process_effects(elapsed.into(), frame.buffer_mut(), frame_area);
 }
@@ -224,11 +217,7 @@ fn draw_transactions_view(
     frame.render_stateful_widget(table, chunks[0], &mut app.transaction_index);
 
     // Help bar for transactions view
-    let help_text = "Commands: [Ctrl+C] Quit | [esc] Back to Accounts | [↑/↓] Navigate";
-    let help = Paragraph::new(help_text)
-        .block(Block::default().borders(Borders::ALL))
-        .style(Style::default().fg(Color::Cyan));
-
+    let help = help_bar("Commands: [Ctrl+C] Quit | [esc] Back to Accounts | [↑/↓] Navigate");
     frame.render_widget(help, chunks[1]);
 }
 
@@ -248,6 +237,13 @@ fn menu_text<'a>(option: &'a str, shortcut: &'a str) -> ratatui::prelude::Line<'
         shortcut.gray().dim(),
         Span::raw("]").gray().dim(),
     ])
+}
+
+/// Creates a styled help bar widget with the given text
+fn help_bar(text: &str) -> Paragraph<'_> {
+    Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL))
+        .style(Style::default().fg(Color::Cyan))
 }
 
 /// Formats a Unix timestamp (in milliseconds) to a readable date string
