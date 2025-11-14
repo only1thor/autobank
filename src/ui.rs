@@ -12,6 +12,12 @@ use tachyonfx::EffectManager;
 
 use crate::{AppState, View};
 
+pub const MENU_ITEMS: &[(&str, &str, View)] = &[
+    ("Transactions", "T", View::Transactions),
+    ("Transfer", "X", View::Transfer),
+    ("Cancel", "esc", View:: Accounts),
+];
+
 pub fn draw(
     app: &mut AppState,
     terminal: &mut Terminal<CrosstermBackend<&mut Stdout>>,
@@ -100,10 +106,10 @@ pub fn draw(
             }
 
             View::Menu => {
-                let cancel_text = menu_text("Cancel", "esc");
-                let transaction_text = menu_text("Transactions", "T");
-
-                let menu_items = vec![ListItem::new(transaction_text), ListItem::new(cancel_text)];
+                let menu_items: Vec<ListItem> = MENU_ITEMS
+                    .iter()
+                    .map(|(label, shortcut, _)| ListItem::new(menu_text(label, shortcut)))
+                    .collect();
 
                 let list = List::new(menu_items)
                     .block(Block::bordered().title("Actions"))
@@ -200,7 +206,8 @@ pub fn draw(
                     .style(Style::default().fg(Color::Cyan));
 
                 frame.render_widget(help, chunks[1]);
-            }
+            },
+            _ => {}
         }
     });
 }

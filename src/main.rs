@@ -29,11 +29,12 @@ use tachyonfx::{
     EffectManager, Interpolation,
     fx::{self},
 };
-
+#[derive(Clone, Copy)]
 pub enum View {
     Accounts,
     Menu,
     Transactions,
+    Transfer
 }
 
 pub struct AppState {
@@ -54,6 +55,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let config = fileio::get_config_file();
 
     auth::auth(config.client_id, config.client_secret);
+
+    // Setup panic hook to restore terminal on panic
+    set_up_panic_hook();
 
     // Setup terminal
     enable_raw_mode()?;
@@ -84,8 +88,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         transactions: vec!()
     };
 
-    let menu_length = 2; //TODO: fix
-
     loop {
         let elapsed = last_frame.elapsed();
         last_frame = Instant::now();
@@ -107,7 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let i = app
                             .menu_index
                             .selected()
-                            .map_or(0, |i| (i + 1) % menu_length);
+                            .map_or(0, |i| (i + 1) % ui::MENU_ITEMS.len());
                         app.menu_index.select(Some(i));
                     }
 
@@ -122,7 +124,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let i = app
                             .menu_index
                             .selected()
-                            .map_or(0, |i| (i + menu_length - 1) % menu_length);
+                            .map_or(0, |i| (i + ui::MENU_ITEMS.len() - 1) % ui::MENU_ITEMS.len());
                         app.menu_index.select(Some(i));
                     }
                     (KeyCode::Down, View::Transactions) => {
@@ -149,7 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     (KeyCode::Esc, View::Transactions) => app.view = View::Accounts,
                     (KeyCode::Char('b'), View::Accounts) => app.show_balance = !app.show_balance,
                     (KeyCode::Char('m'), _) => app.show_credit_card = !app.show_credit_card,
-                    //exit command
+                    //exit the application
                     (KeyCode::Char('c'), _) if key.modifiers.contains(KeyModifiers::CONTROL)=> {
                         if !exiting {
                             effects.add_effect(fx::dissolve((500, Interpolation::QuintIn)));
@@ -190,8 +192,12 @@ fn get_transactions(account_key: &String) -> Vec<Transaction> {
 }
 
 fn handle_menu_select(app: &mut AppState) {
-    match app.menu_index.selected() {
-        Some(0) => {
+    //This is horrible, should probably fix.
+    let new_view = ui::MENU_ITEMS.get(app.menu_index.selected().unwrap()).unwrap().2;
+
+    match new_view {
+        View::Accounts => {},
+        View::Transactions => {
             let account_key = &app
                 .accounts
                 .get(app.account_index.selected().unwrap())
@@ -199,11 +205,21 @@ fn handle_menu_select(app: &mut AppState) {
                 .key;
             let transactions = get_transactions(account_key);
             app.transactions = transactions;
-            app.view = View::Transactions;
-        }
-        Some(1) => {
-            app.view = View::Accounts;
-        }
-        _ => {}
-    };
+        },
+        View::Transfer => {todo!()},
+        View::Menu => {}
+    }
+    app.view = new_view;
+}
+
+fn set_up_panic_hook() {
+    // Setup panic hook to restore terminal on panic
+    let original_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        // Restore terminal state
+        let _ = disable_raw_mode();
+        let _ = execute!(io::stdout(), LeaveAlternateScreen);
+        // Call the original panic hook
+        original_hook(panic_info);
+    }));
 }
