@@ -1,7 +1,7 @@
 use std::{io::Stdout, time::Duration};
 
 use ratatui::{
-    Terminal,
+    Frame, Terminal,
     backend::CrosstermBackend,
     layout::{Constraint, Direction, Flex, Layout, Rect},
     style::{Color, Modifier, Style, Stylize},
@@ -15,8 +15,10 @@ use crate::{AppState, View};
 pub const MENU_ITEMS: &[(&str, &str, View)] = &[
     ("Transactions", "T", View::Transactions),
     ("Transfer", "X", View::Transfer),
-    ("Cancel", "esc", View:: Accounts),
+    ("Cancel", "esc", View::Accounts),
 ];
+
+const MONEYBAG: &str = "💰 ";
 
 pub fn draw(
     app: &mut AppState,
@@ -24,192 +26,210 @@ pub fn draw(
     effects: &mut EffectManager<()>,
     elapsed: Duration,
 ) {
-    const MONEYBAG: &str = "💰 ";
-
     let _ = terminal.draw(|frame| {
         // Layout with table and help bar
         let frame_area = frame.area();
 
         match app.view {
             View::Accounts => {
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([Constraint::Min(0), Constraint::Length(3)])
-                    .split(frame_area);
-
-                // Create header row
-                let header = Row::new(vec!["Account Name", "Balance", "Account Number", "Owner"])
-                    .style(
-                        Style::default()
-                            .fg(Color::Yellow)
-                            .add_modifier(Modifier::BOLD),
-                    );
-
-                // Create table rows from accounts
-                let rows: Vec<Row> = app
-                    .accounts
-                    .iter()
-                    .filter(|acc| {
-                        // Filter out credit cards if show_credit_card is false
-                        app.show_credit_card || acc.type_field != "CREDITCARD"
-                    })
-                    .map(|acc| {
-                        // Only allocate balance string when showing it
-                        let balance = if app.show_balance {
-                            format!("{:.2}", acc.balance)
-                        } else {
-                            String::new()
-                        };
-
-                        // Use borrowed data where possible, owned for local data
-                        Row::new(vec![
-                            Cell::from(acc.name.as_str()),
-                            Cell::from(balance),
-                            Cell::from(acc.account_number.as_str()),
-                            Cell::from(
-                                acc.owner.as_ref().map(|o| o.name.as_str()).unwrap_or("N/A"),
-                            ),
-                        ])
-                    })
-                    .collect();
-
-                // Define column widths
-                let widths = [
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                    Constraint::Percentage(25),
-                ];
-
-                // Create the Table widget
-                let table = Table::new(rows, widths)
-                    .header(header)
-                    .block(Block::default().borders(Borders::ALL).title("Accounts"))
-                    .row_highlight_style(
-                        Style::default()
-                            .bg(Color::Blue)
-                            .fg(Color::White)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                    .highlight_symbol(MONEYBAG);
-
-                frame.render_stateful_widget(table, chunks[0], &mut app.account_index);
-
-                // Help bar with commands
-                let help_text = "Commands: [Ctrl+C] Quit | [b] Toggle Balance | [↑/↓] Navigate";
-                let help = Paragraph::new(help_text)
-                    .block(Block::default().borders(Borders::ALL))
-                    .style(Style::default().fg(Color::Cyan));
-
-                frame.render_widget(help, chunks[1]);
-                effects.process_effects(elapsed.into(), frame.buffer_mut(), frame_area);
+                draw_account_view(app, effects, elapsed, frame, frame_area);
             }
-
             View::Menu => {
-                let menu_items: Vec<ListItem> = MENU_ITEMS
-                    .iter()
-                    .map(|(label, shortcut, _)| ListItem::new(menu_text(label, shortcut)))
-                    .collect();
-
-                let list = List::new(menu_items)
-                    .block(Block::bordered().title("Actions"))
-                    .style(Style::default().fg(Color::White))
-                    .highlight_style(
-                        Style::default()
-                            .bg(Color::Blue)
-                            .fg(Color::White)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                    .highlight_symbol(MONEYBAG);
-
-                let menu_area = popup_area(frame_area, 60, 20);
-                let clear_area = popup_area(frame_area, 65, 25);
-                frame.render_widget(Clear, clear_area);
-                frame.render_stateful_widget(list, menu_area, &mut app.menu_index);
+                //we still draw the account view in order to keep it in the background of the menu
+                draw_account_view(app, effects, elapsed, frame, frame_area);
+                draw_menu(app, frame, frame_area);
             }
             View::Transactions => {
-                // Fullscreen layout for transactions
-                let chunks = Layout::default()
-                    .direction(Direction::Vertical)
-                    .constraints([Constraint::Min(0), Constraint::Length(3)])
-                    .split(frame_area);
-
-                // Create header row
-                let header = Row::new(vec!["Date", "Description", "Amount", "Type"]).style(
-                    Style::default()
-                        .fg(Color::Yellow)
-                        .add_modifier(Modifier::BOLD),
-                );
-
-                // Create table rows from transactions
-                let rows: Vec<Row> = app
-                    .transactions
-                    .iter()
-                    .map(|tx| {
-                        // Format date from Unix timestamp (milliseconds)
-                        let date_str = format_timestamp(tx.date);
-
-                        // Use cleaned_description if available, otherwise description
-                        let desc = tx
-                            .cleaned_description
-                            .as_ref()
-                            .or(tx.description.as_ref())
-                            .map(|s| s.as_str())
-                            .unwrap_or("N/A");
-
-                        // Format amount with currency
-                        let amount_str = format!("{:.2} {}", tx.amount, tx.currency_code);
-
-                        // Determine color based on amount (positive = green, negative = red)
-                        let amount_cell = if tx.amount >= 0.0 {
-                            Cell::from(amount_str).style(Style::default().fg(Color::Green))
-                        } else {
-                            Cell::from(amount_str).style(Style::default().fg(Color::Red))
-                        };
-
-                        Row::new(vec![
-                            Cell::from(date_str),
-                            Cell::from(desc),
-                            amount_cell,
-                            Cell::from(tx.type_text.as_str()),
-                        ])
-                    })
-                    .collect();
-
-                // Define column widths
-                let widths = [
-                    Constraint::Percentage(15), // Date
-                    Constraint::Percentage(45), // Description
-                    Constraint::Percentage(20), // Amount
-                    Constraint::Percentage(20), // Type
-                ];
-
-                // Create the Table widget
-                let table = Table::new(rows, widths)
-                    .header(header)
-                    .block(Block::default().borders(Borders::ALL).title("Transactions"))
-                    .row_highlight_style(
-                        Style::default()
-                            .bg(Color::Blue)
-                            .fg(Color::White)
-                            .add_modifier(Modifier::BOLD),
-                    )
-                    .highlight_symbol(MONEYBAG);
-
-                frame.render_widget(Clear, frame_area);
-                frame.render_stateful_widget(table, chunks[0], &mut app.transaction_index);
-
-                // Help bar for transactions view
-                let help_text = "Commands: [Ctrl+C] Quit | [esc] Back to Accounts | [↑/↓] Navigate";
-                let help = Paragraph::new(help_text)
-                    .block(Block::default().borders(Borders::ALL))
-                    .style(Style::default().fg(Color::Cyan));
-
-                frame.render_widget(help, chunks[1]);
-            },
+                draw_transactions_view(app, frame, frame_area);
+            }
             _ => {}
         }
     });
+}
+
+fn draw_account_view(
+    app: &mut AppState,
+    effects: &mut EffectManager<()>,
+    elapsed: Duration,
+    frame: &mut Frame<'_>,
+    frame_area: Rect,
+) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0), Constraint::Length(3)])
+        .split(frame_area);
+
+    // Create header row
+    let header = Row::new(vec!["Account Name", "Balance", "Account Number", "Owner"]).style(
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    );
+
+    // Create table rows from accounts
+    let rows: Vec<Row> = app
+        .accounts
+        .iter()
+        .filter(|acc| {
+            // Filter out credit cards if show_credit_card is false
+            app.show_credit_card || acc.type_field != "CREDITCARD"
+        })
+        .map(|acc| {
+            // Only allocate balance string when showing it
+            let balance = if app.show_balance {
+                format!("{:.2}", acc.balance)
+            } else {
+                String::new()
+            };
+
+            // Use borrowed data where possible, owned for local data
+            Row::new(vec![
+                Cell::from(acc.name.as_str()),
+                Cell::from(balance),
+                Cell::from(acc.account_number.as_str()),
+                Cell::from(acc.owner.as_ref().map(|o| o.name.as_str()).unwrap_or("N/A")),
+            ])
+        })
+        .collect();
+
+    // Define column widths
+    let widths = [
+        Constraint::Percentage(25),
+        Constraint::Percentage(25),
+        Constraint::Percentage(25),
+        Constraint::Percentage(25),
+    ];
+
+    // Create the Table widget
+    let table = Table::new(rows, widths)
+        .header(header)
+        .block(Block::default().borders(Borders::ALL).title("Accounts"))
+        .row_highlight_style(
+            Style::default()
+                .bg(Color::Blue)
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(MONEYBAG);
+
+    frame.render_stateful_widget(table, chunks[0], &mut app.account_index);
+
+    // Help bar with commands
+    let help_text = "Commands: [Ctrl+C] Quit | [b] Toggle Balance | [↑/↓] Navigate";
+    let help = Paragraph::new(help_text)
+        .block(Block::default().borders(Borders::ALL))
+        .style(Style::default().fg(Color::Cyan));
+
+    frame.render_widget(help, chunks[1]);
+    effects.process_effects(elapsed.into(), frame.buffer_mut(), frame_area);
+}
+
+fn draw_menu(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Rect) {
+    let menu_items: Vec<ListItem> = MENU_ITEMS
+        .iter()
+        .map(|(label, shortcut, _)| ListItem::new(menu_text(label, shortcut)))
+        .collect();
+
+    let list = List::new(menu_items)
+        .block(Block::bordered().title("Actions"))
+        .style(Style::default().fg(Color::White))
+        .highlight_style(
+            Style::default()
+                .bg(Color::Blue)
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(MONEYBAG);
+
+    let menu_area = popup_area(frame_area, 60, 20);
+    let clear_area = popup_area(frame_area, 65, 25);
+    frame.render_widget(Clear, clear_area);
+    frame.render_stateful_widget(list, menu_area, &mut app.menu_index);
+}
+
+fn draw_transactions_view(
+    app: &mut AppState,
+    frame: &mut Frame<'_>,
+    frame_area: Rect,
+) {
+    // Fullscreen layout for transactions
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(0), Constraint::Length(3)])
+        .split(frame_area);
+
+    // Create header row
+    let header = Row::new(vec!["Date", "Description", "Amount", "Type"]).style(
+        Style::default()
+            .fg(Color::Yellow)
+            .add_modifier(Modifier::BOLD),
+    );
+
+    // Create table rows from transactions
+    let rows: Vec<Row> = app
+        .transactions
+        .iter()
+        .map(|tx| {
+            // Format date from Unix timestamp (milliseconds)
+            let date_str = format_timestamp(tx.date);
+
+            // Use cleaned_description if available, otherwise description
+            let desc = tx
+                .cleaned_description
+                .as_ref()
+                .or(tx.description.as_ref())
+                .map(|s| s.as_str())
+                .unwrap_or("N/A");
+
+            // Format amount with currency
+            let amount_str = format!("{:.2} {}", tx.amount, tx.currency_code);
+
+            // Determine color based on amount (positive = green, negative = red)
+            let amount_cell = if tx.amount >= 0.0 {
+                Cell::from(amount_str).style(Style::default().fg(Color::Green))
+            } else {
+                Cell::from(amount_str).style(Style::default().fg(Color::Red))
+            };
+
+            Row::new(vec![
+                Cell::from(date_str),
+                Cell::from(desc),
+                amount_cell,
+                Cell::from(tx.type_text.as_str()),
+            ])
+        })
+        .collect();
+
+    // Define column widths
+    let widths = [
+        Constraint::Percentage(15), // Date
+        Constraint::Percentage(45), // Description
+        Constraint::Percentage(20), // Amount
+        Constraint::Percentage(20), // Type
+    ];
+
+    // Create the Table widget
+    let table = Table::new(rows, widths)
+        .header(header)
+        .block(Block::default().borders(Borders::ALL).title("Transactions"))
+        .row_highlight_style(
+            Style::default()
+                .bg(Color::Blue)
+                .fg(Color::White)
+                .add_modifier(Modifier::BOLD),
+        )
+        .highlight_symbol(MONEYBAG);
+
+    frame.render_widget(Clear, frame_area);
+    frame.render_stateful_widget(table, chunks[0], &mut app.transaction_index);
+
+    // Help bar for transactions view
+    let help_text = "Commands: [Ctrl+C] Quit | [esc] Back to Accounts | [↑/↓] Navigate";
+    let help = Paragraph::new(help_text)
+        .block(Block::default().borders(Borders::ALL))
+        .style(Style::default().fg(Color::Cyan));
+
+    frame.render_widget(help, chunks[1]);
 }
 
 /// helper function to create a centered rect using up certain percentage of the available rect `r`

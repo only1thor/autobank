@@ -49,15 +49,12 @@ pub struct AppState {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize logger (off by default, enable with RUST_LOG=debug)
     env_logger::init();
+    // Panic hook restores terminal to working state on panic before exiting.
+    set_up_panic_hook();
 
     let config = fileio::get_config_file();
-
     auth::auth(config.client_id, config.client_secret);
-
-    // Setup panic hook to restore terminal on panic
-    set_up_panic_hook();
 
     // Setup terminal
     enable_raw_mode()?;
@@ -66,9 +63,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let backend = CrosstermBackend::new(&mut stdout);
     let mut terminal = Terminal::new(backend)?;
 
+    // Effects
     let mut effects: EffectManager<()> = EffectManager::default();
-
-    // Add a simple fade-in effect
     let coalesce_in = fx::coalesce((500, Interpolation::QuintIn));
     effects.add_effect(coalesce_in);
 
@@ -77,6 +73,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut exit_start_time: Option<Instant> = None;
     let exit_duration = Duration::from_millis(500);
 
+    // State
     let mut app = AppState {
         account_index: TableState::new().with_selected(0),
         menu_index: ListState::default().with_selected(Some(0)),
