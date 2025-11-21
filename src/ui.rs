@@ -32,25 +32,18 @@ pub fn draw(
 
         match app.view_stack.last() {
             Some(&View::Accounts) => {
-                draw_account_view(app, elapsed, frame, frame_area, "Accounts");
+                draw_account_view(app, frame, frame_area, "Accounts");
             }
             Some(&View::Menu) => {
                 //we still draw the account view in order to keep it in the background of the menu
-                draw_account_view(app, elapsed, frame, frame_area, "Accounts");
+                draw_account_view(app, frame, frame_area, "Accounts");
                 draw_menu(app, frame, frame_area);
             }
             Some(&View::Transactions) => {
                 draw_transactions_view(app, frame, frame_area);
             }
             Some(&View::TransferSelect) => {
-                draw_account_view(
-                    app,
-                    // effects,
-                    elapsed,
-                    frame,
-                    frame_area,
-                    "Select target account",
-                );
+                draw_account_view(app, frame, frame_area, "Select target account");
             }
             Some(&View::TransferModal) => {
                 draw_transfer_modal(app, effects, elapsed, frame, frame_area);
@@ -72,14 +65,7 @@ fn draw_transfer_modal(
     todo!("Transfer not implemented bruh");
 }
 
-fn draw_account_view(
-    app: &mut AppState,
-    // effects: &mut EffectManager<()>,
-    elapsed: Duration,
-    frame: &mut Frame<'_>,
-    frame_area: Rect,
-    title: &str,
-) {
+fn draw_account_view(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Rect, title: &str) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([Constraint::Min(0), Constraint::Length(3)])

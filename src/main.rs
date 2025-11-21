@@ -45,6 +45,8 @@ pub struct AppState {
     pub accounts: Vec<Account>,
     pub view_stack: Vec<View>,
     pub transactions: Vec<Transaction>,
+    pub from_account: Option<usize>,
+    pub target_account: Option<usize>,
 }
 
 fn next_index(current: Option<usize>, len: usize) -> usize {
@@ -90,6 +92,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         accounts: get_accounts(),
         view_stack: vec![View::Accounts],
         transactions: vec![],
+        from_account: None,
+        target_account: None,
     };
 
     loop {
@@ -144,6 +148,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     },
                     (KeyCode::Enter, Some(&View::Accounts)) => app.view_stack.push(View::Menu),
                     (KeyCode::Enter, Some(&View::Menu)) => handle_menu_select(&mut app),
+                    (KeyCode::Enter, Some(&View::TransferSelect)) => {
+                        // Save the currently selected account as the target_account
+                        app.target_account = app.account_index.selected();
+                        // Transition to the transfer modal
+                        app.view_stack.push(View::TransferModal);
+                    }
                     (KeyCode::Esc, _) => {
                         if app.view_stack.len() > 1 {
                             app.view_stack.pop();
@@ -211,7 +221,10 @@ fn handle_menu_select(app: &mut AppState) {
             let transactions = get_transactions(account_key);
             app.transactions = transactions;
         }
-        View::TransferSelect => {}
+        View::TransferSelect => {
+            // Save the currently selected account as the from_account
+            app.from_account = app.account_index.selected();
+        }
         View::TransferModal => {}
         View::Menu => {}
     }
