@@ -140,6 +140,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         // Transition to the transfer modal
                         app.view_stack.push(View::TransferModal);
                     }
+                    (KeyCode::Enter, Some(&View::TransferModal)) => {
+                        todo!("Money transferd, bitch");
+                    }
                     (KeyCode::Esc, _) => {
                         if app.view_stack.len() > 1 {
                             app.view_stack.pop();
