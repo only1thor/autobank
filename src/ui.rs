@@ -169,7 +169,7 @@ fn draw_transfer_modal(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Re
         .map(|acc| acc.name.as_str())
         .unwrap_or("N/A");
     let to_name = app
-        .target_account
+        .to_account
         .and_then(|idx| app.accounts.get(idx))
         .map(|acc| acc.name.as_str())
         .unwrap_or("N/A");

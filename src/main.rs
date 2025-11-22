@@ -4,17 +4,19 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use log::debug;
-use std::{
-    io,
-    time::{Duration, Instant},
-};
-
 use ratatui::{
     backend::CrosstermBackend,
     widgets::{ListState, TableState},
     Terminal,
 };
-
+use std::{
+    io,
+    time::{Duration, Instant},
+};
+use tachyonfx::{
+    fx::{self},
+    EffectManager, Interpolation,
+};
 use tui_input::backend::crossterm::EventHandler;
 use tui_input::Input;
 
@@ -26,10 +28,6 @@ mod fileio;
 mod models;
 mod ui;
 
-use tachyonfx::{
-    fx::{self},
-    EffectManager, Interpolation,
-};
 #[derive(Clone, Copy)]
 pub enum View {
     Accounts,
@@ -49,7 +47,7 @@ pub struct AppState {
     pub view_stack: Vec<View>,
     pub transactions: Vec<Transaction>,
     pub from_account: Option<usize>,
-    pub target_account: Option<usize>,
+    pub to_account: Option<usize>,
     pub amount_input: Input,
 }
 
@@ -89,7 +87,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         view_stack: vec![View::Accounts],
         transactions: vec![],
         from_account: None,
-        target_account: None,
+        to_account: None,
         amount_input: Input::default(),
     };
 
@@ -105,30 +103,46 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 match (key.code, app.view_stack.last()) {
                     (KeyCode::Down, Some(view)) => match view {
                         View::Accounts | View::TransferSelect => {
-                            let i = app.account_index.selected().map_or(0, |i| (i + 1) % app.accounts.len());
+                            let i = app
+                                .account_index
+                                .selected()
+                                .map_or(0, |i| (i + 1) % app.accounts.len());
                             app.account_index.select(Some(i));
                         }
                         View::Menu => {
-                            let i = app.menu_index.selected().map_or(0, |i| (i + 1) % ui::MENU_ITEMS.len());
+                            let i = app
+                                .menu_index
+                                .selected()
+                                .map_or(0, |i| (i + 1) % ui::MENU_ITEMS.len());
                             app.menu_index.select(Some(i));
                         }
                         View::Transactions if !app.transactions.is_empty() => {
-                            let i = app.transaction_index.selected().map_or(0, |i| (i + 1) % app.transactions.len());
+                            let i = app
+                                .transaction_index
+                                .selected()
+                                .map_or(0, |i| (i + 1) % app.transactions.len());
                             app.transaction_index.select(Some(i));
                         }
                         _ => {}
                     },
                     (KeyCode::Up, Some(view)) => match view {
                         View::Accounts | View::TransferSelect => {
-                            let i = app.account_index.selected().map_or(0, |i| (i + app.accounts.len() - 1) % app.accounts.len());
+                            let i = app
+                                .account_index
+                                .selected()
+                                .map_or(0, |i| (i + app.accounts.len() - 1) % app.accounts.len());
                             app.account_index.select(Some(i));
                         }
                         View::Menu => {
-                            let i = app.menu_index.selected().map_or(0, |i| (i + ui::MENU_ITEMS.len() - 1) % ui::MENU_ITEMS.len());
+                            let i = app.menu_index.selected().map_or(0, |i| {
+                                (i + ui::MENU_ITEMS.len() - 1) % ui::MENU_ITEMS.len()
+                            });
                             app.menu_index.select(Some(i));
                         }
                         View::Transactions if !app.transactions.is_empty() => {
-                            let i = app.transaction_index.selected().map_or(0, |i| (i + app.transactions.len() - 1) % app.transactions.len());
+                            let i = app.transaction_index.selected().map_or(0, |i| {
+                                (i + app.transactions.len() - 1) % app.transactions.len()
+                            });
                             app.transaction_index.select(Some(i));
                         }
                         _ => {}
@@ -136,9 +150,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     (KeyCode::Enter, Some(&View::Accounts)) => app.view_stack.push(View::Menu),
                     (KeyCode::Enter, Some(&View::Menu)) => handle_menu_select(&mut app),
                     (KeyCode::Enter, Some(&View::TransferSelect)) => {
-                        // Save the currently selected account as the target_account
-                        app.target_account = app.account_index.selected();
-                        // Transition to the transfer modal
+                        app.to_account = app.account_index.selected();
                         app.view_stack.push(View::TransferModal);
                     }
                     (KeyCode::Esc, _) => {
@@ -150,14 +162,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         app.show_balance = !app.show_balance
                     }
                     (KeyCode::Char('m'), _) => app.show_credit_card = !app.show_credit_card,
-                    //exit the application
-                    (KeyCode::Char('c'), _) if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                        if !exiting {
-                            effects.add_effect(fx::dissolve((500, Interpolation::QuintIn)));
-                            exiting = true;
-                            exit_start_time = Some(Instant::now());
-                        }
-                    }
                     // Handle input in TransferModal
                     (_, Some(&View::TransferModal)) => {
                         match key.code {
@@ -179,6 +183,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             }
                         }
                     }
+
+                    //exit the application
+                    (KeyCode::Char('c'), _) if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                        if !exiting {
+                            effects.add_effect(fx::dissolve((500, Interpolation::QuintIn)));
+                            exiting = true;
+                            exit_start_time = Some(Instant::now());
+                        }
+                    }
                     _ => {}
                 }
             }
@@ -198,7 +211,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     execute!(io::stdout(), LeaveAlternateScreen)?;
     Ok(())
 }
-
 
 fn get_accounts() -> Vec<Account> {
     debug!("Fetching accounts");
