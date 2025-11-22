@@ -140,9 +140,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         // Transition to the transfer modal
                         app.view_stack.push(View::TransferModal);
                     }
-                    (KeyCode::Enter, Some(&View::TransferModal)) => {
-                        todo!("Money transferd, bitch");
-                    }
                     (KeyCode::Esc, _) => {
                         if app.view_stack.len() > 1 {
                             app.view_stack.pop();
@@ -162,7 +159,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     }
                     // Handle input in TransferModal
                     (_, Some(&View::TransferModal)) => {
-                        app.amount_input.handle_event(&Event::Key(key));
+                        match key.code {
+                            KeyCode::Char(c) => {
+                                // Only allow digits and decimal point
+                                if c.is_numeric() || c == '.' || c == ',' {
+                                    app.amount_input.handle_event(&Event::Key(key));
+                                }
+                            }
+                            KeyCode::Enter => {
+                                //TODO: check that amount is actually set.
+                                // Do transfer
+                                // Reset state amount and to/from accounts I guess
+                                todo!("Sovetid! {}", app.amount_input)
+                            }
+                            _ => {
+                                // Pass all other keys (Backspace, Delete, arrows, etc.)
+                                app.amount_input.handle_event(&Event::Key(key));
+                            }
+                        }
                     }
                     _ => {}
                 }
