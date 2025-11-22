@@ -103,32 +103,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         if event::poll(std::time::Duration::from_millis(100))? {
             if let Event::Key(key) = event::read()? {
                 match (key.code, app.view_stack.last()) {
-                    (KeyCode::Down | KeyCode::Up, Some(view)) => match view {
+                    (KeyCode::Down, Some(view)) => match view {
                         View::Accounts | View::TransferSelect => {
-                            let i = get_index(
-                                app.account_index.selected(),
-                                app.accounts.len(),
-                                key.code,
-                            );
-                            app.account_index.select(i);
+                            let i = app.account_index.selected().map_or(0, |i| (i + 1) % app.accounts.len());
+                            app.account_index.select(Some(i));
                         }
                         View::Menu => {
-                            let i = get_index(
-                                app.menu_index.selected(),
-                                ui::MENU_ITEMS.len(),
-                                key.code,
-                            );
-                            app.menu_index.select(i);
+                            let i = app.menu_index.selected().map_or(0, |i| (i + 1) % ui::MENU_ITEMS.len());
+                            app.menu_index.select(Some(i));
                         }
-                        View::Transactions => {
-                            if !app.transactions.is_empty() {
-                                let i = get_index(
-                                    app.transaction_index.selected(),
-                                    app.transactions.len(),
-                                    key.code,
-                                );
-                                app.transaction_index.select(i);
-                            }
+                        View::Transactions if !app.transactions.is_empty() => {
+                            let i = app.transaction_index.selected().map_or(0, |i| (i + 1) % app.transactions.len());
+                            app.transaction_index.select(Some(i));
+                        }
+                        _ => {}
+                    },
+                    (KeyCode::Up, Some(view)) => match view {
+                        View::Accounts | View::TransferSelect => {
+                            let i = app.account_index.selected().map_or(0, |i| (i + app.accounts.len() - 1) % app.accounts.len());
+                            app.account_index.select(Some(i));
+                        }
+                        View::Menu => {
+                            let i = app.menu_index.selected().map_or(0, |i| (i + ui::MENU_ITEMS.len() - 1) % ui::MENU_ITEMS.len());
+                            app.menu_index.select(Some(i));
+                        }
+                        View::Transactions if !app.transactions.is_empty() => {
+                            let i = app.transaction_index.selected().map_or(0, |i| (i + app.transactions.len() - 1) % app.transactions.len());
+                            app.transaction_index.select(Some(i));
                         }
                         _ => {}
                     },
@@ -198,13 +199,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn get_index(current: Option<usize>, len: usize, direction: KeyCode) -> Option<usize> {
-    match direction {
-        KeyCode::Up => Some(current.map_or(0, |i| (i + len - 1) % len)),
-        KeyCode::Down => Some(current.map_or(0, |i| (i + len + 1) % len)),
-        _ => None, //this won'thappen, any way to circumvent? Custom Direction enum, maybe.
-    }
-}
 
 fn get_accounts() -> Vec<Account> {
     debug!("Fetching accounts");
