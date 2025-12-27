@@ -145,8 +145,8 @@ fn draw_menu(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Rect) {
 }
 
 fn draw_transfer_modal(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Rect) {
-    let block_area = popup_area(frame_area, 60, 20);
-    let clear_area = popup_area(frame_area, 65, 25);
+    let block_area = popup_area(frame_area, 60, 45);
+    let clear_area = popup_area(frame_area, 65, 50);
 
     let block = Block::bordered().title("Transfer");
 
@@ -156,8 +156,13 @@ fn draw_transfer_modal(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Re
     // Get inner area for content
     let inner_area = block.inner(block_area);
 
-    // Create vertical layout: first row for To/From, second row for Amount input
-    let rows = Layout::vertical([Constraint::Length(1), Constraint::Length(3)]).split(inner_area);
+    // Create vertical layout: first row for To/From, second row for Amount input, third row for Message input
+    let rows = Layout::vertical([
+        Constraint::Length(1), // To/From labels
+        Constraint::Length(3), // Amount input
+        Constraint::Length(3), // Message input
+    ])
+    .split(inner_area);
 
     // First row: To and From labels side by side
     let to_from_chunks =
@@ -190,15 +195,46 @@ fn draw_transfer_modal(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Re
     let amount_label = Paragraph::new("Amount:");
     frame.render_widget(amount_label, label_rows[1]);
 
-    // Render bordered input field
+    // Render bordered input field for amount
     let width = amount_chunks[1].width.saturating_sub(2);
     let scroll = app.amount_input.visual_scroll(width as usize);
+    let amount_style = if app.active_input == crate::TransferInput::Amount {
+        Style::default().fg(Color::Yellow)
+    } else {
+        Style::default().fg(Color::Gray)
+    };
     let input_widget = Paragraph::new(app.amount_input.value())
         .block(Block::default().borders(Borders::ALL))
-        .style(Style::default().fg(Color::Yellow))
+        .style(amount_style)
         .scroll((0, scroll as u16));
 
     frame.render_widget(input_widget, amount_chunks[1]);
+
+    // Third row: Message label and input field
+    let message_chunks =
+        Layout::horizontal([Constraint::Length(10), Constraint::Min(0)]).split(rows[2]);
+
+    // Vertically center the "Message:" label with the input box
+    let message_label_rows =
+        Layout::vertical([Constraint::Length(1), Constraint::Length(1)]).split(message_chunks[0]);
+
+    let message_label = Paragraph::new("Message:");
+    frame.render_widget(message_label, message_label_rows[1]);
+
+    // Render bordered input field for message
+    let msg_width = message_chunks[1].width.saturating_sub(2);
+    let msg_scroll = app.message_input.visual_scroll(msg_width as usize);
+    let message_style = if app.active_input == crate::TransferInput::Message {
+        Style::default().fg(Color::Yellow)
+    } else {
+        Style::default().fg(Color::Gray)
+    };
+    let message_widget = Paragraph::new(app.message_input.value())
+        .block(Block::default().borders(Borders::ALL))
+        .style(message_style)
+        .scroll((0, msg_scroll as u16));
+
+    frame.render_widget(message_widget, message_chunks[1]);
 }
 
 fn draw_transactions_view(app: &mut AppState, frame: &mut Frame<'_>, frame_area: Rect) {

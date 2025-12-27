@@ -49,6 +49,14 @@ pub struct AppState {
     pub from_account: Option<usize>,
     pub to_account: Option<usize>,
     pub amount_input: Input,
+    pub message_input: Input,
+    pub active_input: TransferInput,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+pub enum TransferInput {
+    Amount,
+    Message,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -89,6 +97,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         from_account: None,
         to_account: None,
         amount_input: Input::default(),
+        message_input: Input::default(),
+        active_input: TransferInput::Amount,
     };
 
     loop {
@@ -165,21 +175,40 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     // Handle input in TransferModal
                     (_, Some(&View::TransferModal)) => {
                         match key.code {
-                            KeyCode::Char(c) => {
-                                // Only allow digits and decimal point
-                                if c.is_numeric() || c == '.' || c == ',' {
-                                    app.amount_input.handle_event(&Event::Key(key));
-                                }
+                            KeyCode::Tab => {
+                                // Switch between amount and message inputs
+                                app.active_input = match app.active_input {
+                                    TransferInput::Amount => TransferInput::Message,
+                                    TransferInput::Message => TransferInput::Amount,
+                                };
                             }
                             KeyCode::Enter => {
-                                //TODO: check that amount is actually set.
-                                // Do transfer
-                                // Reset state amount and to/from accounts I guess
-                                todo!("Sovetid! {}", app.amount_input)
+                                api::perform_transfer(&mut app);
+                            }
+                            KeyCode::Char(c) => {
+                                match app.active_input {
+                                    TransferInput::Amount => {
+                                        // Only allow digits and decimal point for amount
+                                        if c.is_numeric() || c == '.' || c == ',' {
+                                            app.amount_input.handle_event(&Event::Key(key));
+                                        }
+                                    }
+                                    TransferInput::Message => {
+                                        // Allow all characters for message
+                                        app.message_input.handle_event(&Event::Key(key));
+                                    }
+                                }
                             }
                             _ => {
-                                // Pass all other keys (Backspace, Delete, arrows, etc.)
-                                app.amount_input.handle_event(&Event::Key(key));
+                                // Pass all other keys (Backspace, Delete, arrows, etc.) to active input
+                                match app.active_input {
+                                    TransferInput::Amount => {
+                                        app.amount_input.handle_event(&Event::Key(key));
+                                    }
+                                    TransferInput::Message => {
+                                        app.message_input.handle_event(&Event::Key(key));
+                                    }
+                                }
                             }
                         }
                     }
@@ -212,7 +241,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn get_accounts() -> Vec<Account> {
+pub fn get_accounts() -> Vec<Account> {
     debug!("Fetching accounts");
     let data = api::get_accounts();
     data.accounts

@@ -1,12 +1,13 @@
+use log::debug;
 use reqwest::{
     Error,
     blocking::{Client, Response},
     header::{ACCEPT, AUTHORIZATION, HeaderMap, HeaderValue},
 };
+use tui_input::Input;
 
 use crate::{
-    fileio::read_access_token_file,
-    models::{AccountData, TransactionResponse},
+    AppState, View, fileio::read_access_token_file, models::{AccountData, CreateTransferDTO, TransactionResponse, TransferResponse}
 };
 
 fn client() -> Client {
@@ -78,4 +79,117 @@ pub fn hello_world() -> Result<Response, Error> {
     client()
         .get("https://api.sparebank1.no/common/helloworld")
         .send()
+}
+
+pub fn perform_transfer(app: &mut AppState) {
+    // Get amount and validate
+    let amount = app.amount_input.value().trim();
+    if amount.is_empty() {
+        debug!("Amount is empty, not performing transfer");
+        return;
+    }
+
+    let from_account = match app.from_account {
+        Some(idx) => &app.accounts[idx],
+        None => {
+            debug!("No from_account selected");
+            return;
+        }
+    };
+
+    let to_account = match app.to_account {
+        Some(idx) => &app.accounts[idx],
+        None => {
+            debug!("No to_account selected");
+            return;
+        }
+    };
+
+    // Get message from input (optional, can be empty)
+    let message = app.message_input.value().trim();
+    let message = if message.is_empty() {
+        None
+    } else {
+        Some(message.to_string())
+    };
+
+    // Create transfer DTO
+    let transfer = CreateTransferDTO {
+        amount: amount.to_string(),
+        due_date: None,
+        message,
+        to_account: to_account.account_number.clone(),
+        from_account: from_account.account_number.clone(),
+        currency_code: None,
+    };
+
+    debug!("Performing transfer: {:?}", transfer);
+
+    // Call API
+    let response = create_transfer(transfer);
+
+    // Check for errors
+    if response.errors.is_empty() {
+        debug!("Transfer successful! Payment ID: {:?}", response.payment_id);
+
+        // Reset state
+        app.amount_input = Input::default();
+        app.message_input = Input::default();
+        app.from_account = None;
+        app.to_account = None;
+
+        // Navigate back to accounts view
+        app.view_stack.clear();
+        app.view_stack.push(View::Accounts);
+
+        // Refresh accounts to show updated balances
+        app.accounts = crate::get_accounts();
+    } else {
+        debug!("Transfer failed with {} error(s):", response.errors.len());
+        for error in &response.errors {
+            debug!(
+                "  - [{}] {} (HTTP {}): {}",
+                error.code, error.trace_id, error.http_code, error.message
+            );
+            if let Some(localized) = &error.localized_message {
+                if let Some(msg) = &localized.message {
+                    debug!("    Localized: {}", msg);
+                }
+            }
+        }
+    }
+}
+
+
+pub fn create_transfer(transfer: CreateTransferDTO) -> TransferResponse {
+    let url = "https://api.sparebank1.no/personal/banking/transfer/debit";
+
+    let transfer_response = client().post(url).json(&transfer).send();
+
+    let data: TransferResponse = match transfer_response {
+        Ok(response) => {
+            let status = response.status();
+            let text = response
+                .text()
+                .expect("Failed to get transfer response text");
+
+            // Check if the HTTP request was successful
+            if !status.is_success() {
+                panic!(
+                    "Transfer API returned HTTP {}: {}",
+                    status,
+                    text
+                );
+            }
+
+            serde_json::from_str(&text).unwrap_or_else(|err| {
+                panic!("Failed to parse transfer JSON: {}\nResponse was: {}", err, text)
+            })
+        }
+        Err(err) => {
+            panic!("Transfer request failed: {}", err)
+        }
+    };
+
+    data
 }
