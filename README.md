@@ -1,6 +1,6 @@
 # Auox (Aurum Oxydatum) 💰
 
-A terminal-based banking application for SpareBank1, written in Rust.
+A terminal-based banking application (currently) for SpareBank1, written in Rust.
 
 ![Demo](demo.gif)
 
