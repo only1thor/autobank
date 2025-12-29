@@ -39,18 +39,17 @@ pub struct AppConfig {
 
 pub fn get_config_file() -> AppConfig {
     if let Some(conf_path) = config_file_path() {
-        let file = fs::read(conf_path)
-            .expect("could not read config.toml")
-            .iter()
-            .map(|c| *c as char)
-            .collect::<String>();
+        if !conf_path.exists() {
+            create_config_template(&conf_path);
+        }
+
+        let file = fs::read_to_string(&conf_path).expect("could not read config.toml");
 
         let appconfig: AppConfig =
             toml::from_str(&file).expect("config.toml is not in proper format");
-
         appconfig
     } else {
-        panic!("Unable to load config. Panicing....");
+        panic!("Unable to determine config directory location");
     }
 }
 
@@ -72,12 +71,12 @@ pub fn read_access_token_file() -> Option<TokenData> {
 
     match file_content {
         Ok(token) => {
-            let token_data: TokenData = serde_json::from_str(&token).expect("auth.json is not in proper format");
+            let token_data: TokenData =
+                serde_json::from_str(&token).expect("auth.json is not in proper format");
             Some(token_data)
-        },
-        Err(_) => {None},
+        }
+        Err(_) => None,
     }
-
 }
 
 pub fn save_token_data_file(token_data: &TokenData) {
@@ -99,4 +98,21 @@ pub fn save_token_data_file(token_data: &TokenData) {
     fs::write(&token_path, json_content).expect("Failed to write token data to file");
 
     debug!("Token data saved to {}", token_path.display());
+}
+
+fn create_config_template(conf_path: &PathBuf) {
+    let template = r#"# Auox Configuration File
+# Add your SpareBank 1 API credentials below
+
+client_id = "your-client-id-here"
+client_secret = "your-client-secret-here"
+"#;
+    fs::write(&conf_path, template).expect("Failed to create config.toml template");
+
+    panic!(
+        "\n\n[Auox] Config file created at: {}\n\
+                Please edit this file and add your SpareBank 1 API credentials.\n\
+                Then run Auox again.\n",
+        conf_path.display()
+    );
 }
