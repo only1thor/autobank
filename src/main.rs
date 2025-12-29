@@ -108,8 +108,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ui::draw(&mut app, &mut terminal, &mut effects, elapsed);
 
         // Handle input
-        if event::poll(std::time::Duration::from_millis(100))? {
-            if let Event::Key(key) = event::read()? {
+        if event::poll(std::time::Duration::from_millis(100))?
+            && let Event::Key(key) = event::read()? {
                 match (key.code, app.view_stack.last()) {
                     (KeyCode::Down, Some(view)) => match view {
                         View::Accounts | View::TransferSelect => {
@@ -224,16 +224,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     _ => {}
                 }
             }
-        }
 
         // If exiting and dissolve effect is done, break the loop
-        if exiting {
-            if let Some(start_time) = exit_start_time {
-                if start_time.elapsed() >= exit_duration {
+        if exiting
+            && let Some(start_time) = exit_start_time
+                && start_time.elapsed() >= exit_duration {
                     break;
                 }
-            }
-        }
     }
 
     disable_raw_mode()?;

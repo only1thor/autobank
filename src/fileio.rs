@@ -107,7 +107,7 @@ fn create_config_template(conf_path: &PathBuf) {
 client_id = "your-client-id-here"
 client_secret = "your-client-secret-here"
 "#;
-    fs::write(&conf_path, template).expect("Failed to create config.toml template");
+    fs::write(conf_path, template).expect("Failed to create config.toml template");
 
     panic!(
         "\n\n[Auox] Config file created at: {}\n\

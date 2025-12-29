@@ -169,11 +169,10 @@ pub fn perform_transfer(app: &mut AppState) {
                 "  - [{}] {} (HTTP {}): {}",
                 error.code, error.trace_id, error.http_code, error.message
             );
-            if let Some(localized) = &error.localized_message {
-                if let Some(msg) = &localized.message {
+            if let Some(localized) = &error.localized_message
+                && let Some(msg) = &localized.message {
                     debug!("    Localized: {}", msg);
                 }
-            }
         }
     }
 }
