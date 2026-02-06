@@ -53,5 +53,5 @@ pub struct ClassificationInput {
     #[serde(rename = "type")]
     pub type_field: String,
     pub text: Option<String>,
-    pub date: String,
+    pub date: i64,
 }
