@@ -55,8 +55,8 @@
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-gray-900">Rules</h1>
-			<p class="text-gray-500">Automation rules for your transactions</p>
+			<h1 class="text-2xl font-bold text-gray-100">Rules</h1>
+			<p class="text-gray-400">Automation rules for your transactions</p>
 		</div>
 		<a href="/rules/new" class="btn btn-primary">
 			<Plus class="h-4 w-4 mr-2" />
@@ -66,11 +66,11 @@
 
 	{#if loading}
 		<div class="flex justify-center py-12">
-			<RefreshCw class="h-8 w-8 animate-spin text-primary-600" />
+			<RefreshCw class="h-8 w-8 animate-spin text-primary-500" />
 		</div>
 	{:else if error}
-		<div class="card p-6 bg-red-50 border-red-200">
-			<div class="flex items-center gap-3 text-red-700">
+		<div class="card p-6 bg-red-900/30 border-red-700">
+			<div class="flex items-center gap-3 text-red-400">
 				<AlertCircle class="h-5 w-5" />
 				<p>{error}</p>
 			</div>

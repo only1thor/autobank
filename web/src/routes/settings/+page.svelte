@@ -55,17 +55,17 @@
 
 <div class="space-y-6">
 	<div>
-		<h1 class="text-2xl font-bold text-gray-900">Settings</h1>
-		<p class="text-gray-500">System configuration and status</p>
+		<h1 class="text-2xl font-bold text-gray-100">Settings</h1>
+		<p class="text-gray-400">System configuration and status</p>
 	</div>
 
 	{#if loading}
 		<div class="flex justify-center py-12">
-			<RefreshCw class="h-8 w-8 animate-spin text-primary-600" />
+			<RefreshCw class="h-8 w-8 animate-spin text-primary-400" />
 		</div>
 	{:else if error}
-		<div class="card p-6 bg-red-50 border-red-200">
-			<div class="flex items-center gap-3 text-red-700">
+		<div class="card p-6 bg-red-900/30 border-red-700">
+			<div class="flex items-center gap-3 text-red-400">
 				<AlertCircle class="h-5 w-5" />
 				<p>{error}</p>
 			</div>
@@ -74,18 +74,18 @@
 	{:else if status}
 		<!-- Scheduler -->
 		<div class="card p-6">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">Scheduler</h2>
+			<h2 class="text-lg font-semibold text-gray-100 mb-4">Scheduler</h2>
 			
 			<div class="flex items-center justify-between">
 				<div>
 					<div class="flex items-center gap-2">
-						<span class="text-sm font-medium text-gray-700">Status:</span>
-						<span class="badge {status.scheduler_enabled ? 'badge-success' : 'bg-gray-100 text-gray-600'}">
+						<span class="text-sm font-medium text-gray-300">Status:</span>
+						<span class="badge {status.scheduler_enabled ? 'badge-success' : 'bg-gray-700 text-gray-400'}">
 							{status.scheduler_enabled ? 'Running' : 'Paused'}
 						</span>
 					</div>
 					{#if status.last_poll}
-						<p class="text-sm text-gray-500 mt-1">
+						<p class="text-sm text-gray-400 mt-1">
 							Last poll: <TimeAgo timestamp={status.last_poll} />
 						</p>
 					{/if}
@@ -114,35 +114,35 @@
 
 		<!-- Stats -->
 		<div class="card p-6">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">Statistics</h2>
+			<h2 class="text-lg font-semibold text-gray-100 mb-4">Statistics</h2>
 			
 			<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
 				<div>
-					<div class="text-xs text-gray-500 uppercase">Total Rules</div>
-					<div class="text-2xl font-semibold text-gray-900">{status.total_rules}</div>
+					<div class="text-xs text-gray-400 uppercase">Total Rules</div>
+					<div class="text-2xl font-semibold text-gray-100">{status.total_rules}</div>
 				</div>
 				<div>
-					<div class="text-xs text-gray-500 uppercase">Enabled Rules</div>
-					<div class="text-2xl font-semibold text-gray-900">{status.enabled_rules}</div>
+					<div class="text-xs text-gray-400 uppercase">Enabled Rules</div>
+					<div class="text-2xl font-semibold text-gray-100">{status.enabled_rules}</div>
 				</div>
 				<div>
-					<div class="text-xs text-gray-500 uppercase">Total Executions</div>
-					<div class="text-2xl font-semibold text-gray-900">{status.total_executions}</div>
+					<div class="text-xs text-gray-400 uppercase">Total Executions</div>
+					<div class="text-2xl font-semibold text-gray-100">{status.total_executions}</div>
 				</div>
 				<div>
-					<div class="text-xs text-gray-500 uppercase">System Status</div>
-					<div class="text-2xl font-semibold text-green-600">{status.status}</div>
+					<div class="text-xs text-gray-400 uppercase">System Status</div>
+					<div class="text-2xl font-semibold text-green-400">{status.status}</div>
 				</div>
 			</div>
 		</div>
 
 		<!-- API Info -->
 		<div class="card p-6">
-			<h2 class="text-lg font-semibold text-gray-900 mb-4">API</h2>
-			<p class="text-sm text-gray-600">
-				The backend API is available at <code class="bg-gray-100 px-1 rounded">/api</code>
+			<h2 class="text-lg font-semibold text-gray-100 mb-4">API</h2>
+			<p class="text-sm text-gray-400">
+				The backend API is available at <code class="bg-gray-700 px-1 rounded">/api</code>
 			</p>
-			<p class="text-sm text-gray-500 mt-2">
+			<p class="text-sm text-gray-400 mt-2">
 				Make sure the autobank-server is running on port 3000 for the frontend to connect.
 			</p>
 		</div>

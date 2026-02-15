@@ -46,11 +46,11 @@
 								<ArrowDownLeft class="h-4 w-4 text-green-500 flex-shrink-0" />
 							{/if}
 							<div>
-								<div class="font-medium text-gray-900">
+								<div class="font-medium text-gray-100">
 									{tx.cleanedDescription || tx.description || 'Unknown'}
 								</div>
 								{#if tx.kidOrMessage}
-									<div class="text-xs text-gray-500">{tx.kidOrMessage}</div>
+									<div class="text-xs text-gray-400">{tx.kidOrMessage}</div>
 								{/if}
 							</div>
 						</div>
@@ -64,13 +64,13 @@
 							{tx.bookingStatus === 'BOOKED' ? 'Settled' : 'Pending'}
 						</span>
 					</td>
-					<td class="text-right whitespace-nowrap font-medium {tx.amount < 0 ? 'text-red-600' : 'text-green-600'}">
+					<td class="text-right whitespace-nowrap font-medium {tx.amount < 0 ? 'text-red-400' : 'text-green-400'}">
 						{formatCurrency(tx.amount, tx.currencyCode)}
 					</td>
 				</tr>
 			{:else}
 				<tr>
-					<td colspan="4" class="text-center py-8 text-gray-500">
+					<td colspan="4" class="text-center py-8 text-gray-400">
 						No transactions found
 					</td>
 				</tr>

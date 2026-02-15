@@ -38,6 +38,9 @@
 	let { children } = $props();
 
 	onMount(async () => {
+		// Enable dark mode by default
+		document.documentElement.classList.add('dark');
+		
 		try {
 			const status = await api.getServerStatus();
 			demoMode = status.demo_mode;
@@ -55,7 +58,7 @@
 	<title>Autobank</title>
 </svelte:head>
 
-<div class="min-h-screen bg-gray-50">
+<div class="dark min-h-screen bg-gray-900">
 	<!-- Demo mode banner -->
 	{#if demoMode}
 		<div class="bg-amber-500 text-amber-950 text-center py-1.5 text-sm font-medium">
@@ -65,8 +68,8 @@
 	{/if}
 
 	<!-- Mobile header -->
-	<header class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-		<h1 class="text-lg font-semibold text-gray-900">Autobank</h1>
+	<header class="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+		<h1 class="text-lg font-semibold text-gray-100">Autobank</h1>
 		<button class="btn btn-ghost p-2" onclick={() => (sidebarOpen = true)}>
 			<Menu class="h-5 w-5" />
 		</button>
@@ -76,14 +79,14 @@
 	{#if sidebarOpen}
 		<div class="lg:hidden fixed inset-0 z-50">
 			<div
-				class="absolute inset-0 bg-gray-500/75"
+				class="absolute inset-0 bg-black/75"
 				onclick={() => (sidebarOpen = false)}
 				role="button"
 				tabindex="-1"
 			></div>
-			<aside class="absolute left-0 top-0 h-full w-64 bg-white shadow-xl">
-				<div class="p-4 flex items-center justify-between border-b">
-					<h1 class="text-lg font-semibold text-gray-900">Autobank</h1>
+			<aside class="absolute left-0 top-0 h-full w-64 bg-gray-800 shadow-xl">
+				<div class="p-4 flex items-center justify-between border-b border-gray-700">
+					<h1 class="text-lg font-semibold text-gray-100">Autobank</h1>
 					<button class="btn btn-ghost p-1" onclick={() => (sidebarOpen = false)}>
 						<X class="h-5 w-5" />
 					</button>
@@ -94,8 +97,8 @@
 							href={item.href}
 							class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
 								{page.url.pathname === item.href
-								? 'bg-primary-50 text-primary-700'
-								: 'text-gray-600 hover:bg-gray-100'}"
+								? 'bg-primary-900/50 text-primary-400'
+								: 'text-gray-400 hover:bg-gray-700 hover:text-gray-100'}"
 							onclick={() => (sidebarOpen = false)}
 						>
 							<item.icon class="h-5 w-5" />
@@ -109,9 +112,9 @@
 
 	<!-- Desktop sidebar -->
 	<aside class="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
-		<div class="flex flex-col flex-grow bg-white border-r border-gray-200">
-			<div class="p-6 border-b border-gray-200">
-				<h1 class="text-xl font-bold text-gray-900">Autobank</h1>
+		<div class="flex flex-col flex-grow bg-gray-800 border-r border-gray-700">
+			<div class="p-6 border-b border-gray-700">
+				<h1 class="text-xl font-bold text-gray-100">Autobank</h1>
 				<p class="text-xs text-gray-500 mt-1">Rule-based automation</p>
 			</div>
 			<nav class="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -120,8 +123,8 @@
 						href={item.href}
 						class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
 							{page.url.pathname === item.href
-							? 'bg-primary-50 text-primary-700'
-							: 'text-gray-600 hover:bg-gray-100'}"
+							? 'bg-primary-900/50 text-primary-400'
+							: 'text-gray-400 hover:bg-gray-700 hover:text-gray-100'}"
 					>
 						<item.icon class="h-5 w-5" />
 						{item.label}

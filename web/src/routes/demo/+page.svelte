@@ -87,10 +87,10 @@
 	<div class="flex items-center justify-between">
 		<div>
 			<div class="flex items-center gap-2">
-				<Beaker class="h-6 w-6 text-amber-600" />
-				<h1 class="text-2xl font-bold text-gray-900">Demo Mode</h1>
+				<Beaker class="h-6 w-6 text-amber-500" />
+				<h1 class="text-2xl font-bold text-gray-100">Demo Mode</h1>
 			</div>
-			<p class="text-gray-500">Create test transactions to test your automation rules</p>
+			<p class="text-gray-400">Create test transactions to test your automation rules</p>
 		</div>
 		<button class="btn btn-secondary" onclick={loadData} disabled={loading}>
 			<RefreshCw class="h-4 w-4 mr-2 {loading ? 'animate-spin' : ''}" />
@@ -100,22 +100,22 @@
 
 	{#if loading}
 		<div class="flex justify-center py-12">
-			<RefreshCw class="h-8 w-8 animate-spin text-primary-600" />
+			<RefreshCw class="h-8 w-8 animate-spin text-primary-500" />
 		</div>
 	{:else if !demoStatus?.enabled}
-		<div class="card p-6 bg-amber-50 border-amber-200">
-			<div class="flex items-center gap-3 text-amber-700">
+		<div class="card p-6 bg-amber-900/30 border-amber-700">
+			<div class="flex items-center gap-3 text-amber-400">
 				<AlertCircle class="h-5 w-5" />
 				<div>
 					<p class="font-medium">Demo mode is not enabled</p>
-					<p class="text-sm mt-1">Start the server with the <code class="bg-amber-100 px-1 rounded">--demo</code> flag to enable demo mode.</p>
+					<p class="text-sm mt-1 text-amber-500">Start the server with the <code class="bg-amber-900/50 px-1 rounded">--demo</code> flag to enable demo mode.</p>
 				</div>
 			</div>
 		</div>
 	{:else}
 		{#if error}
-			<div class="card p-4 bg-red-50 border-red-200">
-				<div class="flex items-center gap-3 text-red-700">
+			<div class="card p-4 bg-red-900/30 border-red-700">
+				<div class="flex items-center gap-3 text-red-400">
 					<AlertCircle class="h-5 w-5" />
 					<p>{error}</p>
 				</div>
@@ -123,8 +123,8 @@
 		{/if}
 
 		{#if successMessage}
-			<div class="card p-4 bg-green-50 border-green-200">
-				<div class="flex items-center gap-3 text-green-700">
+			<div class="card p-4 bg-green-900/30 border-green-700">
+				<div class="flex items-center gap-3 text-green-400">
 					<CheckCircle class="h-5 w-5" />
 					<p>{successMessage}</p>
 				</div>
@@ -134,10 +134,10 @@
 		<div class="grid gap-6 lg:grid-cols-2">
 			<!-- Create Transaction Form -->
 			<div class="card p-6">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">Create Transaction</h2>
+				<h2 class="text-lg font-semibold text-gray-100 mb-4">Create Transaction</h2>
 				<form onsubmit={handleSubmit} class="space-y-4">
 					<div>
-						<label for="account" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="account" class="block text-sm font-medium text-gray-300 mb-1">
 							Account
 						</label>
 						<select
@@ -155,7 +155,7 @@
 					</div>
 
 					<div>
-						<label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="description" class="block text-sm font-medium text-gray-300 mb-1">
 							Description
 						</label>
 						<input
@@ -169,7 +169,7 @@
 					</div>
 
 					<div>
-						<label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
+						<label for="amount" class="block text-sm font-medium text-gray-300 mb-1">
 							Amount (NOK)
 						</label>
 						<input
@@ -189,9 +189,9 @@
 							id="isSettled"
 							type="checkbox"
 							bind:checked={isSettled}
-							class="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+							class="h-4 w-4 rounded border-gray-600 bg-gray-700 text-primary-600 focus:ring-primary-500"
 						/>
-						<label for="isSettled" class="text-sm text-gray-700">
+						<label for="isSettled" class="text-sm text-gray-300">
 							Transaction is settled (not pending)
 						</label>
 					</div>
@@ -214,19 +214,19 @@
 
 			<!-- Demo Accounts -->
 			<div class="card p-6">
-				<h2 class="text-lg font-semibold text-gray-900 mb-4">Demo Accounts</h2>
+				<h2 class="text-lg font-semibold text-gray-100 mb-4">Demo Accounts</h2>
 				<div class="space-y-3">
 					{#each accounts as account}
-						<div class="p-3 rounded-lg border border-gray-200 {selectedAccountKey === account.key ? 'ring-2 ring-primary-500 border-primary-500' : ''}">
+						<div class="p-3 rounded-lg border border-gray-700 bg-gray-800/50 {selectedAccountKey === account.key ? 'ring-2 ring-primary-500 border-primary-500' : ''}">
 							<div class="flex justify-between items-start">
 								<div>
-									<p class="font-medium text-gray-900">{account.name}</p>
-									<p class="text-sm text-gray-500">{account.accountNumber}</p>
-									<span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+									<p class="font-medium text-gray-100">{account.name}</p>
+									<p class="text-sm text-gray-400">{account.accountNumber}</p>
+									<span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full bg-gray-700 text-gray-300">
 										{account.accountType}
 									</span>
 								</div>
-								<p class="font-semibold text-gray-900">{formatCurrency(account.balance)}</p>
+								<p class="font-semibold text-gray-100">{formatCurrency(account.balance)}</p>
 							</div>
 						</div>
 					{/each}

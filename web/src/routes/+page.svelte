@@ -65,8 +65,8 @@
 <div class="space-y-6">
 	<div class="flex items-center justify-between">
 		<div>
-			<h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-			<p class="text-gray-500">Overview of your accounts and automation</p>
+			<h1 class="text-2xl font-bold text-gray-100">Dashboard</h1>
+			<p class="text-gray-400">Overview of your accounts and automation</p>
 		</div>
 		<button class="btn btn-primary" onclick={triggerPoll} disabled={polling}>
 			<RefreshCw class="h-4 w-4 mr-2 {polling ? 'animate-spin' : ''}" />
@@ -76,11 +76,11 @@
 
 	{#if loading}
 		<div class="flex justify-center py-12">
-			<RefreshCw class="h-8 w-8 animate-spin text-primary-600" />
+			<RefreshCw class="h-8 w-8 animate-spin text-primary-500" />
 		</div>
 	{:else if error}
-		<div class="card p-6 bg-red-50 border-red-200">
-			<div class="flex items-center gap-3 text-red-700">
+		<div class="card p-6 bg-red-900/30 border-red-700">
+			<div class="flex items-center gap-3 text-red-400">
 				<AlertCircle class="h-5 w-5" />
 				<p>{error}</p>
 			</div>
@@ -90,34 +90,34 @@
 		<!-- Stats cards -->
 		<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 			<div class="card p-4">
-				<div class="text-sm font-medium text-gray-500">Total Balance</div>
-				<div class="mt-1 text-2xl font-semibold text-gray-900">
+				<div class="text-sm font-medium text-gray-400">Total Balance</div>
+				<div class="mt-1 text-2xl font-semibold text-gray-100">
 					{formatCurrency(totalBalance)}
 				</div>
 			</div>
 			<div class="card p-4">
-				<div class="text-sm font-medium text-gray-500">Accounts</div>
-				<div class="mt-1 text-2xl font-semibold text-gray-900">{accounts.length}</div>
+				<div class="text-sm font-medium text-gray-400">Accounts</div>
+				<div class="mt-1 text-2xl font-semibold text-gray-100">{accounts.length}</div>
 			</div>
 			<div class="card p-4">
 				<div class="flex items-center gap-2">
-					<Sparkles class="h-4 w-4 text-primary-600" />
-					<div class="text-sm font-medium text-gray-500">Active Rules</div>
+					<Sparkles class="h-4 w-4 text-primary-500" />
+					<div class="text-sm font-medium text-gray-400">Active Rules</div>
 				</div>
-				<div class="mt-1 text-2xl font-semibold text-gray-900">
+				<div class="mt-1 text-2xl font-semibold text-gray-100">
 					{enabledRules} / {rules.length}
 				</div>
 			</div>
 			<div class="card p-4">
 				<div class="flex items-center gap-2">
 					{#if status?.scheduler_enabled}
-						<CheckCircle class="h-4 w-4 text-green-600" />
+						<CheckCircle class="h-4 w-4 text-green-500" />
 					{:else}
-						<AlertCircle class="h-4 w-4 text-yellow-600" />
+						<AlertCircle class="h-4 w-4 text-yellow-500" />
 					{/if}
-					<div class="text-sm font-medium text-gray-500">Scheduler</div>
+					<div class="text-sm font-medium text-gray-400">Scheduler</div>
 				</div>
-				<div class="mt-1 text-2xl font-semibold {status?.scheduler_enabled ? 'text-green-600' : 'text-yellow-600'}">
+				<div class="mt-1 text-2xl font-semibold {status?.scheduler_enabled ? 'text-green-500' : 'text-yellow-500'}">
 					{status?.scheduler_enabled ? 'Active' : 'Paused'}
 				</div>
 			</div>
@@ -126,8 +126,8 @@
 		<!-- Accounts preview -->
 		<div>
 			<div class="flex items-center justify-between mb-4">
-				<h2 class="text-lg font-semibold text-gray-900">Accounts</h2>
-				<a href="/accounts" class="text-sm text-primary-600 hover:text-primary-700">View all</a>
+				<h2 class="text-lg font-semibold text-gray-100">Accounts</h2>
+				<a href="/accounts" class="text-sm text-primary-400 hover:text-primary-300">View all</a>
 			</div>
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
 				{#each accounts.slice(0, 3) as account (account.key)}
@@ -139,8 +139,8 @@
 		<!-- Recent executions -->
 		<div>
 			<div class="flex items-center justify-between mb-4">
-				<h2 class="text-lg font-semibold text-gray-900">Recent Executions</h2>
-				<a href="/executions" class="text-sm text-primary-600 hover:text-primary-700">View all</a>
+				<h2 class="text-lg font-semibold text-gray-100">Recent Executions</h2>
+				<a href="/executions" class="text-sm text-primary-400 hover:text-primary-300">View all</a>
 			</div>
 			<ExecutionList {executions} />
 		</div>

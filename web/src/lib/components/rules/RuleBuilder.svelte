@@ -170,7 +170,7 @@
 <form class="space-y-6" onsubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
 	<!-- Basic info -->
 	<div class="card p-6 space-y-4">
-		<h2 class="text-lg font-semibold text-gray-900">Basic Information</h2>
+		<h2 class="text-lg font-semibold text-gray-100">Basic Information</h2>
 		
 		<div>
 			<label for="name" class="label">Rule Name *</label>
@@ -184,22 +184,22 @@
 
 		<div>
 			<label class="label">Trigger Account *</label>
-			<p class="text-xs text-gray-500 mb-2">Which account to monitor for transactions</p>
+			<p class="text-xs text-gray-400 mb-2">Which account to monitor for transactions</p>
 			<AccountSelect {accounts} selected={triggerAccountKey} onselect={(key) => (triggerAccountKey = key)} placeholder="Select trigger account" />
 		</div>
 	</div>
 
 	<!-- Conditions -->
 	<div class="card p-6 space-y-4">
-		<h2 class="text-lg font-semibold text-gray-900">Conditions</h2>
-		<p class="text-sm text-gray-500">When should this rule trigger? All conditions must match.</p>
+		<h2 class="text-lg font-semibold text-gray-100">Conditions</h2>
+		<p class="text-sm text-gray-400">When should this rule trigger? All conditions must match.</p>
 
 		{#if conditions.length > 0}
 			<div class="space-y-2">
 				{#each conditions as condition, i}
-					<div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
+					<div class="flex items-center justify-between bg-gray-800 rounded px-3 py-2">
 						<span class="text-sm">{formatCondition(condition)}</span>
-						<button type="button" class="btn btn-ghost p-1 text-red-600" onclick={() => removeCondition(i)}>
+						<button type="button" class="btn btn-ghost p-1 text-red-400" onclick={() => removeCondition(i)}>
 							<Trash2 class="h-4 w-4" />
 						</button>
 					</div>
@@ -226,7 +226,7 @@
 					<input type="text" bind:value={conditionPattern} class="input" placeholder="e.g., netflix|spotify" />
 				</div>
 				<label class="flex items-center gap-2 text-sm">
-					<input type="checkbox" bind:checked={conditionCaseInsensitive} class="rounded border-gray-300" />
+					<input type="checkbox" bind:checked={conditionCaseInsensitive} class="rounded border-gray-600" />
 					Case insensitive
 				</label>
 			{:else if newConditionType === 'amount_greater_than' || newConditionType === 'amount_less_than'}
@@ -261,20 +261,20 @@
 
 	<!-- Actions -->
 	<div class="card p-6 space-y-4">
-		<h2 class="text-lg font-semibold text-gray-900">Actions</h2>
-		<p class="text-sm text-gray-500">What should happen when conditions match?</p>
+		<h2 class="text-lg font-semibold text-gray-100">Actions</h2>
+		<p class="text-sm text-gray-400">What should happen when conditions match?</p>
 
 		{#if actions.length > 0}
 			<div class="space-y-2">
 				{#each actions as action, i}
-					<div class="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
+					<div class="flex items-center justify-between bg-gray-800 rounded px-3 py-2">
 						<span class="text-sm">
 							Transfer {formatAmount(action.amount)} from {formatAccountRef(action.from_account)} to {formatAccountRef(action.to_account)}
 							{#if action.message}
-								<span class="text-gray-500"> - "{action.message}"</span>
+								<span class="text-gray-400"> - "{action.message}"</span>
 							{/if}
 						</span>
-						<button type="button" class="btn btn-ghost p-1 text-red-600" onclick={() => removeAction(i)}>
+						<button type="button" class="btn btn-ghost p-1 text-red-400" onclick={() => removeAction(i)}>
 							<Trash2 class="h-4 w-4" />
 						</button>
 					</div>

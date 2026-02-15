@@ -16,7 +16,7 @@
 	{#each rules as rule (rule.id)}
 		<RuleCard {rule} {onupdate} {ondelete} {onedit} />
 	{:else}
-		<div class="card p-8 text-center text-gray-500">
+		<div class="card p-8 text-center text-gray-400">
 			<p>No rules yet. Create your first automation rule to get started.</p>
 		</div>
 	{/each}

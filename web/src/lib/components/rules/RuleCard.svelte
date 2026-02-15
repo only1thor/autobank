@@ -69,17 +69,17 @@
 	<div class="flex items-start justify-between">
 		<div class="flex-1">
 			<div class="flex items-center gap-2">
-				<h3 class="font-medium text-gray-900">{rule.name}</h3>
+				<h3 class="font-medium text-gray-100">{rule.name}</h3>
 				<span
 					class="badge {rule.enabled
 						? 'bg-green-100 text-green-800'
-						: 'bg-gray-100 text-gray-600'}"
+						: 'bg-gray-700 text-gray-400'}"
 				>
 					{rule.enabled ? 'Active' : 'Disabled'}
 				</span>
 			</div>
 			{#if rule.description}
-				<p class="mt-1 text-sm text-gray-500">{rule.description}</p>
+				<p class="mt-1 text-sm text-gray-400">{rule.description}</p>
 			{/if}
 		</div>
 
@@ -100,7 +100,7 @@
 				<Settings class="h-4 w-4" />
 			</button>
 			<button
-				class="btn btn-ghost p-2 text-red-600 hover:bg-red-50"
+				class="btn btn-ghost p-2 text-red-400 hover:bg-red-900/30"
 				onclick={() => ondelete(rule.id)}
 				title="Delete rule"
 			>
@@ -110,17 +110,17 @@
 	</div>
 
 	<div class="mt-4 grid gap-2 sm:grid-cols-2 text-sm">
-		<div class="rounded bg-gray-50 px-3 py-2">
-			<div class="text-xs font-medium text-gray-500 uppercase">When</div>
-			<div class="text-gray-900">{getConditionSummary(rule)}</div>
+		<div class="rounded bg-gray-800 px-3 py-2">
+			<div class="text-xs font-medium text-gray-400 uppercase">When</div>
+			<div class="text-gray-100">{getConditionSummary(rule)}</div>
 		</div>
-		<div class="rounded bg-gray-50 px-3 py-2">
-			<div class="text-xs font-medium text-gray-500 uppercase">Then</div>
-			<div class="text-gray-900">{getActionSummary(rule)}</div>
+		<div class="rounded bg-gray-800 px-3 py-2">
+			<div class="text-xs font-medium text-gray-400 uppercase">Then</div>
+			<div class="text-gray-100">{getActionSummary(rule)}</div>
 		</div>
 	</div>
 
-	<div class="mt-3 text-xs text-gray-500">
+	<div class="mt-3 text-xs text-gray-400">
 		Updated <TimeAgo timestamp={rule.updated_at} />
 	</div>
 </div>

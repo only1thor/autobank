@@ -30,13 +30,13 @@
 <div class="relative">
 	<button
 		type="button"
-		class="input flex items-center justify-between bg-white"
+		class="input flex items-center justify-between bg-gray-800"
 		onclick={() => (open = !open)}
 	>
 		{#if selectedAccount}
 			<span class="flex items-center gap-2">
 				<span>{selectedAccount.name}</span>
-				<span class="text-gray-500">
+				<span class="text-gray-400">
 					({formatCurrency(selectedAccount.balance, selectedAccount.currencyCode)})
 				</span>
 			</span>
@@ -47,19 +47,19 @@
 	</button>
 
 	{#if open}
-		<div class="absolute z-10 mt-1 w-full rounded-md bg-white shadow-lg border border-gray-200">
+		<div class="absolute z-10 mt-1 w-full rounded-md bg-gray-800 shadow-lg border border-gray-700">
 			<ul class="max-h-60 overflow-auto py-1">
 				{#each accounts as account (account.key)}
 					<li>
 						<button
 							type="button"
-							class="w-full px-3 py-2 text-left hover:bg-gray-100 {selected === account.key
-								? 'bg-primary-50'
+							class="w-full px-3 py-2 text-left hover:bg-gray-700 {selected === account.key
+								? 'bg-primary-900/50'
 								: ''}"
 							onclick={() => handleSelect(account.key)}
 						>
 							<div class="font-medium">{account.name}</div>
-							<div class="text-sm text-gray-500">
+							<div class="text-sm text-gray-400">
 								{account.accountNumber} -
 								{formatCurrency(account.balance, account.currencyCode)}
 							</div>

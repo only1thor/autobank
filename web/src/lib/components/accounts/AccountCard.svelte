@@ -20,15 +20,15 @@
 </script>
 
 <button
-	class="card p-4 w-full text-left hover:border-primary-300 transition-colors cursor-pointer"
+	class="card p-4 w-full text-left hover:border-primary-500 transition-colors cursor-pointer"
 	onclick={onclick}
 >
 	<div class="flex items-start justify-between">
 		<div class="flex items-center gap-3">
 			<div
 				class="flex h-10 w-10 items-center justify-center rounded-full {isCreditCard
-					? 'bg-purple-100 text-purple-600'
-					: 'bg-primary-100 text-primary-600'}"
+					? 'bg-purple-900/50 text-purple-400'
+					: 'bg-primary-900/50 text-primary-400'}"
 			>
 				{#if isCreditCard}
 					<CreditCard class="h-5 w-5" />
@@ -37,18 +37,18 @@
 				{/if}
 			</div>
 			<div>
-				<h3 class="font-medium text-gray-900">{account.name}</h3>
-				<p class="text-sm text-gray-500">{account.accountNumber}</p>
+				<h3 class="font-medium text-gray-100">{account.name}</h3>
+				<p class="text-sm text-gray-400">{account.accountNumber}</p>
 			</div>
 		</div>
 	</div>
 
 	<div class="mt-4">
-		<div class="text-2xl font-semibold text-gray-900">
+		<div class="text-2xl font-semibold text-gray-100">
 			{formatCurrency(account.balance, account.currencyCode)}
 		</div>
 		{#if account.availableBalance !== account.balance}
-			<div class="text-sm text-gray-500">
+			<div class="text-sm text-gray-400">
 				Available: {formatCurrency(account.availableBalance, account.currencyCode)}
 			</div>
 		{/if}
@@ -56,11 +56,11 @@
 
 	{#if isCreditCard && account.creditCardCreditLimit}
 		<div class="mt-2">
-			<div class="flex justify-between text-xs text-gray-500 mb-1">
+			<div class="flex justify-between text-xs text-gray-400 mb-1">
 				<span>Credit used</span>
 				<span>{formatCurrency(account.creditCardCreditLimit - account.balance, account.currencyCode)}</span>
 			</div>
-			<div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+			<div class="h-2 bg-gray-700 rounded-full overflow-hidden">
 				<div
 					class="h-full bg-purple-500 rounded-full"
 					style="width: {Math.min(100, ((account.creditCardCreditLimit - account.balance) / account.creditCardCreditLimit) * 100)}%"

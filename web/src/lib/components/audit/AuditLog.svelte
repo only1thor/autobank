@@ -11,10 +11,10 @@
 	let expandedId = $state<string | null>(null);
 
 	function getEventTypeColor(eventType: string): string {
-		if (eventType.includes('failed') || eventType.includes('error')) return 'text-red-600';
-		if (eventType.includes('success') || eventType.includes('completed')) return 'text-green-600';
-		if (eventType.includes('started') || eventType.includes('initiated')) return 'text-blue-600';
-		return 'text-gray-600';
+		if (eventType.includes('failed') || eventType.includes('error')) return 'text-red-400';
+		if (eventType.includes('success') || eventType.includes('completed')) return 'text-green-400';
+		if (eventType.includes('started') || eventType.includes('initiated')) return 'text-blue-400';
+		return 'text-gray-400';
 	}
 
 	function formatEventType(eventType: string): string {
@@ -54,8 +54,8 @@
 							{formatEventType(entry.event_type)}
 						</span>
 					</td>
-					<td class="text-sm text-gray-600">{entry.actor}</td>
-					<td class="text-sm text-gray-600">
+					<td class="text-sm text-gray-400">{entry.actor}</td>
+					<td class="text-sm text-gray-400">
 						{#if entry.resource_type}
 							{entry.resource_type}
 							{#if entry.resource_id}
@@ -68,14 +68,14 @@
 				</tr>
 				{#if expandedId === entry.id}
 					<tr>
-						<td colspan="5" class="bg-gray-50 p-4">
+						<td colspan="5" class="bg-gray-800 p-4">
 							<pre class="text-xs overflow-x-auto">{JSON.stringify(entry.details, null, 2)}</pre>
 						</td>
 					</tr>
 				{/if}
 			{:else}
 				<tr>
-					<td colspan="5" class="text-center py-8 text-gray-500">
+					<td colspan="5" class="text-center py-8 text-gray-400">
 						No audit entries
 					</td>
 				</tr>

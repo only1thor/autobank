@@ -34,16 +34,16 @@
 					<td class="whitespace-nowrap">
 						<TimeAgo timestamp={exec.executed_at} />
 					</td>
-					<td class="font-medium">{formatCurrency(exec.amount)}</td>
-					<td class="text-sm text-gray-600">{exec.from_account}</td>
-					<td class="text-sm text-gray-600">{exec.to_account}</td>
+					<td class="font-medium text-gray-100">{formatCurrency(exec.amount)}</td>
+					<td class="text-sm text-gray-400">{exec.from_account}</td>
+					<td class="text-sm text-gray-400">{exec.to_account}</td>
 					<td>
 						<StatusBadge
 							status={exec.status === 'success' ? 'success' : 'error'}
 							text={exec.status}
 						/>
 						{#if exec.error_message}
-							<div class="text-xs text-red-600 mt-1">{exec.error_message}</div>
+							<div class="text-xs text-red-400 mt-1">{exec.error_message}</div>
 						{/if}
 					</td>
 				</tr>
