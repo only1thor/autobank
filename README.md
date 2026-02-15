@@ -1,83 +1,170 @@
-# Auox (Aurum Oxydatum) 💰
+# Autobank
 
-A terminal-based banking application (currently) for SpareBank1, written in Rust.
-
-![Demo](demo.gif)
+Rule-based banking automation for SpareBank 1. Monitor transactions and automatically execute transfers based on customizable rules.
 
 ## Features
 
-- 💳 **Account Management** - View all your accounts, including credit cards
-- 📊 **Transaction History** - Browse your transaction history with color-coded amounts
-- 💸 **Transfers** - Move money between accounts.
-- 🎨 **Modern TUI** - Okay looking terminal interface with animations and effects
-- ⚡ **Fast & Lightweight** - Built with Rust for speed and efficiency (or because I really like Rust, realisticly it makes no difference here 🤷‍♂️)
+- **Rule Engine** - Create rules that trigger transfers based on transaction patterns
+- **Condition Matching** - Match by description (regex), amount ranges, transaction type
+- **Automatic Transfers** - Execute transfers between accounts when conditions match
+- **Web Dashboard** - Modern SvelteKit frontend for managing rules and viewing history
+- **Audit Trail** - Complete logging of all rule evaluations and transfers
+- **Transaction Deduplication** - Smart fingerprinting to avoid duplicate actions
+
+## Architecture
+
+```
+autobank/
+├── crates/
+│   ├── sb1-api/           # SpareBank 1 API client library
+│   └── autobank-server/   # Axum REST API + rule engine + scheduler
+├── web/                   # SvelteKit frontend
+└── flake.nix              # Nix development environment
+```
 
 ## Prerequisites
 
-- Rust (install from [rustup.rs](https://rustup.rs))
-- SpareBank 1 banking account
-- SpareBank 1 API credentials (client ID and secret)
+- [Nix](https://nixos.org/download.html) with flakes enabled (recommended)
+- Or: Rust, Node.js 22+, pnpm, SQLite
+- SpareBank 1 API credentials ([developer portal](https://developer.sparebank1.no/#/))
 
-## Installation
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/sverrejb/auox.git
-cd auox
+# Enter development environment
+nix develop
 
-# Build the project
-cargo build --release
+# Run database migrations
+just migrate
 
-# Run the application
-cargo run --release
+# Start the backend server
+cargo run -p autobank-server
 
-# Install binary
-cargo install --path .
+# In another terminal, start the frontend
+cd web && pnpm dev
+
+# Open http://localhost:5173
 ```
-
-## API access:
-To use with SpareBank 1's APIs you need to create a client on their developer portal at: [https://developer.sparebank1.no/#/](https://developer.sparebank1.no/#/)
 
 ## Configuration
 
-On first run, Auox will create a config file at:
-- **macOS**: `~/Library/Application Support/auox/config.toml`
-- **Linux**: `~/.config/auox/config.toml`
-- **Windows**: `%APPDATA%\auox\config.toml`
-
-Edit the config file and add your SpareBank 1 API credentials:
+Create a config file at:
+- **macOS**: `~/Library/Application Support/autobank/config.toml`
+- **Linux**: `~/.config/autobank/config.toml`
+- **Windows**: `%APPDATA%\autobank\config.toml`
 
 ```toml
 client_id = "your-client-id"
 client_secret = "your-client-secret"
-
-# Your financial institution ID
-# Examples: fid-smn (SpareBank 1 Midt-Norge), fid-snn (SpareBank 1 SR-Bank), etc.
-financial_institution = "fid-smn"
+financial_institution = "fid-smn"  # e.g., fid-smn, fid-snn
 ```
 
-## Usage
+## Example Rules
 
-### First Launch
+### Auto-cover Netflix subscription
+When Netflix charges your checking account, automatically transfer the amount from savings:
 
-1. Run `cargo run` or `auox` if you installed the binary.
-2. Your browser will open for OAuth authentication
-3. Log in to SpareBank 1 and authorize the application
-4. The app will save your tokens and start automatically
+```json
+{
+  "name": "Netflix auto-transfer",
+  "trigger_account_key": "checking-account-key",
+  "conditions": [
+    { "type": "description_matches", "pattern": "netflix", "case_insensitive": true },
+    { "type": "is_settled" }
+  ],
+  "actions": [{
+    "type": "transfer",
+    "from_account": { "type": "by_key", "key": "savings-account-key" },
+    "to_account": { "type": "trigger_account" },
+    "amount": { "type": "transaction_amount_abs" }
+  }]
+}
+```
 
-### Built with:
+### Save on small purchases
+Transfer a fixed amount to savings for every small purchase:
 
-- **ratatui** - Terminal UI framework
-- **crossterm** - Terminal manipulation
-- **tachyonfx** - Visual effects and animations
-- **reqwest** - HTTP client
-- **serde** - Serialization framework
-- **tui-input** - Text input widgets
+```json
+{
+  "name": "Small purchase savings",
+  "trigger_account_key": "checking-account-key",
+  "conditions": [
+    { "type": "amount_less_than", "value": 0 },
+    { "type": "amount_greater_than", "value": -100 },
+    { "type": "is_settled" }
+  ],
+  "actions": [{
+    "type": "transfer",
+    "from_account": { "type": "trigger_account" },
+    "to_account": { "type": "by_key", "key": "savings-account-key" },
+    "amount": { "type": "fixed", "value": 20 }
+  }]
+}
+```
 
+## API Endpoints
 
-## Contributing
+### Accounts
+- `GET /api/accounts` - List all accounts
+- `GET /api/accounts/:key` - Get single account
+- `GET /api/accounts/:key/transactions` - Get transactions
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+### Rules
+- `GET /api/rules` - List all rules
+- `POST /api/rules` - Create rule
+- `GET /api/rules/:id` - Get rule details
+- `PUT /api/rules/:id` - Update rule
+- `DELETE /api/rules/:id` - Delete rule
+- `POST /api/rules/:id/enable` - Enable rule
+- `POST /api/rules/:id/disable` - Disable rule
+
+### Executions & Audit
+- `GET /api/executions` - List recent executions
+- `GET /api/audit` - Query audit log
+
+### System
+- `GET /api/health` - Health check
+- `GET /api/system/status` - Server status and stats
+- `POST /api/system/poll` - Trigger immediate poll
+- `POST /api/system/scheduler/enable` - Enable scheduler
+- `POST /api/system/scheduler/disable` - Disable scheduler
+
+## Development
+
+```bash
+# Run all tests
+cargo test
+
+# Run backend with auto-reload
+just dev
+
+# Run frontend dev server
+just web
+
+# Check code
+cargo clippy
+cargo fmt --check
+
+# Build for production
+cargo build --release
+cd web && pnpm build
+```
+
+## Tech Stack
+
+**Backend:**
+- Rust with Axum web framework
+- SQLite with sqlx for persistence
+- Tokio async runtime
+
+**Frontend:**
+- SvelteKit 2 with Svelte 5
+- Tailwind CSS v4
+- TypeScript
+
+**Development:**
+- Nix flakes for reproducible environment
+- Just task runner
 
 ## License
 
@@ -85,4 +172,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Disclaimer
 
-This is an unofficial application and is not affiliated with or endorsed by SpareBank1. Use at your own risk.
+This is an unofficial application and is not affiliated with or endorsed by SpareBank 1. Use at your own risk. Automated transfers can move real money - test thoroughly and monitor executions.
