@@ -2,6 +2,7 @@
 
 mod accounts;
 mod audit;
+mod demo;
 mod executions;
 mod health;
 mod rules;
@@ -28,6 +29,7 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/api/executions", executions::router())
         .nest("/api/audit", audit::router())
         .nest("/api/system", system::router())
+        .nest("/api/demo", demo::router())
         .layer(TraceLayer::new_for_http())
         .layer(cors)
         .with_state(state)

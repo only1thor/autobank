@@ -1,6 +1,8 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/state';
+	import { onMount } from 'svelte';
+	import { api } from '$lib/api';
 	import {
 		LayoutDashboard,
 		Wallet,
@@ -9,13 +11,15 @@
 		FileText,
 		Settings,
 		Menu,
-		X
+		X,
+		Beaker
 	} from 'lucide-svelte';
 
 	interface NavItem {
 		href: string;
 		label: string;
 		icon: typeof LayoutDashboard;
+		demoOnly?: boolean;
 	}
 
 	const navItems: NavItem[] = [
@@ -24,12 +28,27 @@
 		{ href: '/rules', label: 'Rules', icon: Sparkles },
 		{ href: '/executions', label: 'Executions', icon: History },
 		{ href: '/audit', label: 'Audit Log', icon: FileText },
+		{ href: '/demo', label: 'Demo', icon: Beaker, demoOnly: true },
 		{ href: '/settings', label: 'Settings', icon: Settings }
 	];
 
 	let sidebarOpen = $state(false);
+	let demoMode = $state(false);
 
 	let { children } = $props();
+
+	onMount(async () => {
+		try {
+			const status = await api.getServerStatus();
+			demoMode = status.demo_mode;
+		} catch {
+			// Ignore errors - demo mode detection is best-effort
+		}
+	});
+
+	function getVisibleNavItems() {
+		return navItems.filter((item) => !item.demoOnly || demoMode);
+	}
 </script>
 
 <svelte:head>
@@ -37,6 +56,14 @@
 </svelte:head>
 
 <div class="min-h-screen bg-gray-50">
+	<!-- Demo mode banner -->
+	{#if demoMode}
+		<div class="bg-amber-500 text-amber-950 text-center py-1.5 text-sm font-medium">
+			<Beaker class="h-4 w-4 inline-block mr-1 -mt-0.5" />
+			Demo Mode - Using simulated bank data
+		</div>
+	{/if}
+
 	<!-- Mobile header -->
 	<header class="lg:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
 		<h1 class="text-lg font-semibold text-gray-900">Autobank</h1>
@@ -62,7 +89,7 @@
 					</button>
 				</div>
 				<nav class="p-4 space-y-1">
-					{#each navItems as item}
+					{#each getVisibleNavItems() as item}
 						<a
 							href={item.href}
 							class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors
@@ -88,7 +115,7 @@
 				<p class="text-xs text-gray-500 mt-1">Rule-based automation</p>
 			</div>
 			<nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-				{#each navItems as item}
+				{#each getVisibleNavItems() as item}
 					<a
 						href={item.href}
 						class="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors

@@ -206,6 +206,42 @@ export interface SystemStatus {
 	total_executions: number;
 }
 
+// Server status (from /api/status)
+export interface ServerStatus {
+	status: string;
+	version: string;
+	database: string;
+	scheduler: string;
+	demo_mode: boolean;
+}
+
+// Demo mode types
+export interface DemoStatus {
+	enabled: boolean;
+	message: string;
+}
+
+export interface DemoAccount {
+	key: string;
+	name: string;
+	accountNumber: string;
+	balance: number;
+	accountType: string;
+}
+
+export interface CreateDemoTransactionRequest {
+	accountKey: string;
+	description: string;
+	amount: number;
+	isSettled?: boolean;
+}
+
+export interface CreateDemoTransactionResponse {
+	success: boolean;
+	transactionId?: string;
+	message: string;
+}
+
 // API Error
 export interface ApiError {
 	error: string;

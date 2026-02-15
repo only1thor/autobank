@@ -2,9 +2,14 @@ import type {
 	Account,
 	AccountData,
 	AuditEntry,
+	CreateDemoTransactionRequest,
+	CreateDemoTransactionResponse,
 	CreateRuleRequest,
+	DemoAccount,
+	DemoStatus,
 	Rule,
 	RuleExecution,
+	ServerStatus,
 	SystemStatus,
 	TransactionResponse,
 	UpdateRuleRequest
@@ -137,6 +142,29 @@ class ApiClient {
 	async disableScheduler(): Promise<void> {
 		return this.request('/system/scheduler/disable', {
 			method: 'POST'
+		});
+	}
+
+	// Server status (includes demo_mode)
+	async getServerStatus(): Promise<ServerStatus> {
+		return this.request('/status');
+	}
+
+	// Demo mode
+	async getDemoStatus(): Promise<DemoStatus> {
+		return this.request('/demo/status');
+	}
+
+	async getDemoAccounts(): Promise<{ accounts: DemoAccount[] }> {
+		return this.request('/demo/accounts');
+	}
+
+	async createDemoTransaction(
+		request: CreateDemoTransactionRequest
+	): Promise<CreateDemoTransactionResponse> {
+		return this.request('/demo/transactions', {
+			method: 'POST',
+			body: JSON.stringify(request)
 		});
 	}
 }

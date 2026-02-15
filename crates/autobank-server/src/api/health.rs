@@ -1,6 +1,7 @@
 //! Health check and status endpoints.
 
-use axum::Json;
+use crate::AppState;
+use axum::{Json, extract::State};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -15,6 +16,7 @@ pub struct StatusResponse {
     version: &'static str,
     database: &'static str,
     scheduler: &'static str,
+    demo_mode: bool,
 }
 
 /// Simple health check endpoint.
@@ -26,11 +28,12 @@ pub async fn health_check() -> Json<HealthResponse> {
 }
 
 /// Detailed status endpoint.
-pub async fn status() -> Json<StatusResponse> {
+pub async fn status(State(state): State<AppState>) -> Json<StatusResponse> {
     Json(StatusResponse {
         status: "ok",
         version: env!("CARGO_PKG_VERSION"),
         database: "connected",
         scheduler: "running",
+        demo_mode: state.demo_mode,
     })
 }
