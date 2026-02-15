@@ -12,14 +12,6 @@ web:
 test:
     cargo nextest run
 
-# Run database migrations
-migrate:
-    sqlx migrate run --source crates/autobank-server/migrations
-
-# Create a new migration
-migrate-new name:
-    sqlx migrate add -r {{name}} --source crates/autobank-server/migrations
-
 # Check code formatting and lints
 check:
     cargo fmt --check

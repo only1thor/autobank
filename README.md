@@ -34,10 +34,7 @@ autobank/
 # Enter development environment
 nix develop
 
-# Run database migrations
-just migrate
-
-# Start the backend server
+# Start the backend server (creates database automatically)
 cargo run -p autobank-server
 
 # In another terminal, start the frontend

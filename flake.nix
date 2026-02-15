@@ -58,7 +58,6 @@
             echo "  just dev      - Run backend in dev mode"
             echo "  just web      - Run frontend in dev mode"
             echo "  just test     - Run all tests"
-            echo "  just migrate  - Run database migrations"
           '';
         };
         

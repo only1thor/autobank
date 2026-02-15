@@ -27,3 +27,4 @@ login.http
 # Added by cargo
 
 /target
+autobank.db

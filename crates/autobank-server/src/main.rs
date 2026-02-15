@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Initialize database
     let database_url = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "sqlite:./autobank.db?mode=rwc".to_string());
+        .unwrap_or_else(|_| "sqlite:autobank.db".to_string());
 
     let db = Database::connect(&database_url).await?;
     db.run_migrations().await?;

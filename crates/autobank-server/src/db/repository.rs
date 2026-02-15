@@ -2,7 +2,8 @@
 
 use crate::audit::AuditEntry;
 use crate::rules::{Rule, RuleExecution, RuleTransactionLog, TrackedTransaction};
-use sqlx::sqlite::{SqlitePool, SqlitePoolOptions};
+use sqlx::sqlite::{SqliteConnectOptions, SqlitePool, SqlitePoolOptions};
+use std::str::FromStr;
 use thiserror::Error;
 use tracing::info;
 
@@ -21,11 +22,14 @@ pub struct Database {
 }
 
 impl Database {
-    /// Connect to the database.
+    /// Connect to the database, creating it if it doesn't exist.
     pub async fn connect(url: &str) -> Result<Self, DbError> {
+        let options = SqliteConnectOptions::from_str(url)?
+            .create_if_missing(true);
+        
         let pool = SqlitePoolOptions::new()
             .max_connections(5)
-            .connect(url)
+            .connect_with(options)
             .await?;
 
         Ok(Self { pool })
