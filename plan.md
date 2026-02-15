@@ -6,11 +6,12 @@
 |-------|-------------|--------|
 | Phase 1 | sb1-api crate | **COMPLETE** |
 | Phase 2 | autobank-server | **COMPLETE** |
-| Phase 3 | SvelteKit frontend | **NEXT** |
+| Phase 3 | SvelteKit frontend | **COMPLETE** |
 | Phase 4 | Nix flake (already done) | **COMPLETE** |
 
 ### Recent Commits
 ```
+feat: add sveltekit frontend with dashboard, rules, and audit views
 107fded feat: add autobank-server with rule engine and REST API
 b3093b9 refactor: extract sb1-api crate with async trait-based client
 44c004d add plan to transform to rule engine
@@ -24,15 +25,14 @@ b3093b9 refactor: extract sb1-api crate with async trait-based client
 nix develop                    # Enter dev environment
 cargo test                     # Run all tests
 cargo run -p autobank-server   # Run server (needs config)
+cd web && pnpm dev             # Run frontend dev server
 ```
 
-### Next Steps (Phase 3)
-1. Initialize SvelteKit project in `web/` directory
-2. Set up Tailwind CSS v4
-3. Create API client
-4. Build dashboard and account views
-5. Build rule builder UI
-6. Add execution history and audit views
+### All Phases Complete!
+The project now has:
+- **sb1-api**: Async trait-based bank API client
+- **autobank-server**: Axum REST API with rule engine, SQLite, scheduler
+- **web**: SvelteKit frontend with dashboard, rule builder, audit views
 
 ---
 
@@ -788,14 +788,16 @@ class AutobankClient {
 ```
 
 ### Deliverables
-- [ ] SvelteKit project with routing
-- [ ] Dashboard with account overview
-- [ ] Rule CRUD with visual builder
-- [ ] Transaction viewer
-- [ ] Execution history
-- [ ] Audit log viewer
-- [ ] Settings page
-- [ ] Responsive design
+- [x] SvelteKit project with routing
+- [x] Dashboard with account overview
+- [x] Rule CRUD with visual builder
+- [x] Transaction viewer
+- [x] Execution history
+- [x] Audit log viewer
+- [x] Settings page
+- [x] Responsive design
+
+**Status: COMPLETE** - Committed as `feat: add sveltekit frontend with dashboard, rules, and audit views`
 
 ---
 
