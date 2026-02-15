@@ -1,5 +1,41 @@
 # Autobank: Rule-Based Banking Automation
 
+## Current Status
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| Phase 1 | sb1-api crate | **COMPLETE** |
+| Phase 2 | autobank-server | **COMPLETE** |
+| Phase 3 | SvelteKit frontend | **NEXT** |
+| Phase 4 | Nix flake (already done) | **COMPLETE** |
+
+### Recent Commits
+```
+107fded feat: add autobank-server with rule engine and REST API
+b3093b9 refactor: extract sb1-api crate with async trait-based client
+44c004d add plan to transform to rule engine
+```
+
+### Test Status
+- **26 tests passing** (5 condition, 3 mock, 6 client, 8 model, 4 integration)
+
+### Quick Start for Development
+```bash
+nix develop                    # Enter dev environment
+cargo test                     # Run all tests
+cargo run -p autobank-server   # Run server (needs config)
+```
+
+### Next Steps (Phase 3)
+1. Initialize SvelteKit project in `web/` directory
+2. Set up Tailwind CSS v4
+3. Create API client
+4. Build dashboard and account views
+5. Build rule builder UI
+6. Add execution history and audit views
+
+---
+
 ## Project Overview
 
 Transform the existing TUI banking app (Auox) into a **Rust backend** with a **SvelteKit web frontend** that enables rule-based automation of bank transfers based on transaction patterns from SpareBank 1's API.
@@ -155,6 +191,8 @@ tokio-test = "0.4"
 - [x] All existing API functionality preserved
 - [x] Unit tests passing
 - [x] Mock client available for testing
+
+**Status: COMPLETE** - Committed as `refactor: extract sb1-api crate with async trait-based client`
 
 ---
 
@@ -588,17 +626,55 @@ axum-test = "16"
 ```
 
 ### Deliverables
-- [ ] Axum server with all REST endpoints
-- [ ] SQLite database with migrations
-- [ ] Rule engine with condition evaluation
-- [ ] Transaction deduplication system
-- [ ] Audit trail logging
-- [ ] Polling scheduler
-- [ ] Integration tests
+- [x] Axum server with all REST endpoints
+- [x] SQLite database with migrations
+- [x] Rule engine with condition evaluation
+- [x] Transaction deduplication system
+- [x] Audit trail logging
+- [x] Polling scheduler
+- [x] Integration tests
+
+**Status: COMPLETE** - Committed as `feat: add autobank-server with rule engine and REST API`
+
+### Implemented API Endpoints
+```
+Health:
+  GET    /api/health               # Health check
+  GET    /api/status               # Basic status
+
+Accounts:
+  GET    /api/accounts             # List all accounts
+  GET    /api/accounts/:key        # Get single account
+  GET    /api/accounts/:key/transactions  # Get transactions
+
+Rules:
+  GET    /api/rules                # List all rules
+  POST   /api/rules                # Create rule
+  GET    /api/rules/:id            # Get rule details
+  PUT    /api/rules/:id            # Update rule
+  DELETE /api/rules/:id            # Delete rule
+  POST   /api/rules/:id/enable     # Enable rule
+  POST   /api/rules/:id/disable    # Disable rule
+  GET    /api/rules/:id/executions # Executions for specific rule
+
+Executions:
+  GET    /api/executions           # List recent executions (all rules)
+  GET    /api/executions/:id       # Get specific execution
+
+Audit:
+  GET    /api/audit                # Query audit log
+  GET    /api/audit/:id            # Get specific audit entry
+
+System:
+  GET    /api/system/status        # Server status with stats
+  POST   /api/system/poll          # Trigger immediate poll
+  POST   /api/system/scheduler/enable   # Enable scheduler
+  POST   /api/system/scheduler/disable  # Disable scheduler
+```
 
 ---
 
-## Phase 3: SvelteKit Web Frontend
+## Phase 3: SvelteKit Web Frontend (NEXT)
 
 ### Goals
 - Clean, responsive UI for managing rules
