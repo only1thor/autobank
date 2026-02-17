@@ -4,11 +4,11 @@ use serde::Deserialize;
 use std::{fs, path::PathBuf};
 
 fn app_config_dir() -> Option<PathBuf> {
-    dirs::config_dir().map(|base| base.join("auox"))
+    dirs::config_dir().map(|base| base.join("autobank"))
 }
 
 fn app_data_dir() -> Option<PathBuf> {
-    dirs::data_dir().map(|base| base.join("auox"))
+    dirs::data_dir().map(|base| base.join("autobank"))
 }
 
 fn config_file_path() -> Option<PathBuf> {
@@ -99,7 +99,7 @@ pub fn save_token_data_file(token_data: &TokenData) {
 }
 
 fn create_config_template(conf_path: &PathBuf) {
-    let template = r#"# Auox Configuration File
+    let template = r#"# Autobank Configuration File
 # Add your SpareBank 1 API credentials below
 
 client_id = "your-client-id-here"
@@ -112,9 +112,9 @@ financial_institution = "fid-smn"
     fs::write(conf_path, template).expect("Failed to create config.toml template");
 
     panic!(
-        "\n\n[Auox] Config file created at: {}\n\
+        "\n\n[Autobank] Config file created at: {}\n\
                 Please edit this file and add your SpareBank 1 API credentials.\n\
-                Then run Auox again.\n",
+                Then run Autobank again.\n",
         conf_path.display()
     );
 }

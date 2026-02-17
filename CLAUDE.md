@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Auox (Aurum Oxydatum) is a terminal-based banking application written in Rust that interfaces with SpareBank 1's API. It provides a TUI (Terminal User Interface) for viewing and managing bank accounts using OAuth authentication.
+Autobank is a terminal-based banking application written in Rust that interfaces with SpareBank 1's API. It provides a TUI (Terminal User Interface) for viewing and managing bank accounts using OAuth authentication.
 
 ## Commands
 
@@ -52,13 +52,13 @@ The application implements a three-tiered OAuth authentication strategy in `src/
 
 ### File Management (`src/fileio.rs`)
 - **Config file location**:
-  - macOS: `~/Library/Application Support/auox/config.toml`
-  - Linux: `~/.config/auox/config.toml`
-  - Windows: `%APPDATA%\auox\config.toml`
+  - macOS: `~/Library/Application Support/autobank/config.toml`
+  - Linux: `~/.config/autobank/config.toml`
+  - Windows: `%APPDATA%\autobank\config.toml`
 - **Token file location**:
-  - macOS: `~/Library/Application Support/auox/auth.json`
-  - Linux: `~/.local/share/auox/auth.json`
-  - Windows: `%APPDATA%\auox\auth.json`
+  - macOS: `~/Library/Application Support/autobank/auth.json`
+  - Linux: `~/.local/share/autobank/auth.json`
+  - Windows: `%APPDATA%\autobank\auth.json`
 - Creates directories and config template automatically on first run if they don't exist
 - **Required config fields**:
   - `client_id`: OAuth client ID for SpareBank 1 API
